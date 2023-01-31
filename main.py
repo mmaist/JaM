@@ -1,20 +1,24 @@
 import requests
 import argparse
 import json
-from google.cloud import storage
 from google.cloud import firestore
 import os
 import functions_framework
 
 
 
+#from flask import Flask
+
+#app = Flask(__name__)
 
 #app.run(port=int(os.environ.get("PORT", 8080)),host='0.0.0.0',debug=True)
 #os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/jackmaistros/peppy-sensor-375905-02f812598a1b.json"
 
+#@app.route("/")
 @functions_framework.http
 def listen(request):
     nba_scores()
+    print("lsitened")
 
 def nba_scores():
     SPORT = 'basketball_nba'
