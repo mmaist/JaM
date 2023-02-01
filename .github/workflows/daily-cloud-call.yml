@@ -1,8 +1,10 @@
-# This is a basic workflow that is triggered on a schedule at 1:10 UTC
+# This is a basic workflow that is triggered on a schedule at 6:00 UTC or Manual trigger
 name: Manual workflow
   
 on:
   workflow_dispatch:
+  schedule:
+  - cron: "0 6 * * *"
 
 jobs:
   build:
