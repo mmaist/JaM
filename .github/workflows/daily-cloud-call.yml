@@ -1,0 +1,29 @@
+# This is a basic workflow that is triggered on a schedule at 6:00 UTC or Manual trigger
+name: Manual workflow
+  
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: "0 6 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        pip3 install -r requirements.txt
+      
+    - name: Access URL
+      run: |
+        curl https://nba-scores-pcynlb5fzq-wl.a.run.app
+        
