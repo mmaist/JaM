@@ -41,19 +41,19 @@ export default function Home() {
 
         <div className={styles.center}>
           <Image
-            className={styles.logo}
-            src="/next.svg"
+            //className={styles.logo}
+            src="/knight.png"
             alt="Next.js Logo"
-            width={180}
-            height={37}
+            width={300}
+            height={400}
             priority
           />
           <div className={styles.thirteen}>
             <Image
-              src="/thirteen.svg"
+              src="/lebron.png"
               alt="13"
               width={40}
-              height={31}
+              height={70}
               priority
             />
           </div>
