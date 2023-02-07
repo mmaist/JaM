@@ -21,9 +21,10 @@ def getData():
     for doc in query:
         gamecounter = gamecounter + 1
         father_dict['game'+ (str(gamecounter))] = doc.to_dict()
-
+    
     json_return = json.dumps(father_dict, indent = 4)
     return(json_return)
+    
     
     #testing below
     #with open("test.txt", "w") as outfile:
