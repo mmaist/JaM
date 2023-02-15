@@ -8,7 +8,7 @@ const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
 function Games() {
  
-  const { games, error, isLoading } = useSWR('http://127.0.0.1:5000/getData', fetcher)
+  const { data: games, error, isLoading } = useSWR('http://127.0.0.1:5000/getData', fetcher)
 
   if (error) return <div>Failed to load</div>
   console.log(JSON.stringify(games))
@@ -16,7 +16,22 @@ function Games() {
   console.log('heloo')
   if (isLoading) return <div>Loading...</div>
 
- return  <p>{JSON.stringify(games)}</p>
+  const gamesArray = Object.values(games)
+
+ return  (
+  <div>
+  {gamesArray.map((game) => (
+    <tr key={game.id}>
+      <td>{game.date_time}</td>
+      <td>{game.home_team}</td>
+      <td>{game.away_team}</td>
+      <td>{game.fanduel_h2h}</td>
+      <td>{game.mybookie_h2h}</td>
+      <td></td>
+    </tr>
+  ))}
+</div>
+)
 
  
 }
