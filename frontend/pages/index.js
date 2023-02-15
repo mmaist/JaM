@@ -4,20 +4,21 @@ import { Inter } from '@next/font/google'
 import styles from '@/styles/Home.module.css'
 import useSWR from 'swr'
 
-const fetcher = (...args) => fetch(...args).then(res => res.json())
+const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
 function Games() {
-  const { games, error } = useSWR('http://127.0.0.1:5000/getData', fetcher)
+ 
+  const { games, error, isLoading } = useSWR('http://127.0.0.1:5000/getData', fetcher)
 
   if (error) return <div>Failed to load</div>
-  if (!games) return <div>Loading...</div>
+  console.log(JSON.stringify(games))
+  console.log('hiiii')
+  console.log('heloo')
+  if (isLoading) return <div>Loading...</div>
 
-  return (
-    <div>
-      <h1>{games.name}</h1>
-      <p>{games.bio}</p>
-    </div>
-  )
+ return  <p>{JSON.stringify(games)}</p>
+
+ 
 }
 
 export default function Home() {
@@ -34,4 +35,5 @@ export default function Home() {
       </div>
     </>
   )
+
 }

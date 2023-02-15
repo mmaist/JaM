@@ -29,7 +29,7 @@ def getData():
         gamecounter = gamecounter + 1
         father_dict['game'+ (str(gamecounter))] = doc.to_dict()
     
-    json_return = json.dumps(father_dict, indent = 4)
+    json_return = json.dumps(father_dict)
     return(json_return)
     
     
