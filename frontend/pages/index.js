@@ -3,6 +3,8 @@ import Image from 'next/image'
 import { Inter } from '@next/font/google'
 import styles from '@/styles/Home.module.css'
 import useSWR from 'swr'
+import moment from 'moment-timezone'
+import React from 'react';
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
@@ -15,25 +17,67 @@ function Games() {
   console.log('hiiii')
   console.log('heloo')
   if (isLoading) return <div>Loading...</div>
-
-  const gamesArray = Object.values(games)
-
- return  (
-  <div>
-  {gamesArray.map((game) => (
-    <tr key={game.id}>
-      <td>{game.date_time}</td>
-      <td>{game.home_team}</td>
-      <td>{game.away_team}</td>
-      <td>{game.fanduel_h2h}</td>
-      <td>{game.mybookie_h2h}</td>
-      <td></td>
-    </tr>
-  ))}
-</div>
-)
+  
+  return(disGames(games))
+  
 
  
+}
+function disGames(aGames){
+
+  const gamesArray = Object.values(aGames)
+
+  return (
+    <div className={styles.tablecontainer}>
+    <table className={styles.myTable}>
+        <thead>
+          <tr>
+            <th>Matchup</th>
+            <th className={styles.myC}>{moment.tz('America/Los_Angeles').format('MMM DD, YYYY h:mm A')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {gamesArray.map((game) => (
+            <tr key={game.id}>
+              <td>{game.away_team} <br /> @ {game.home_team}</td>
+              <td className={styles.myC}>{moment.utc(game.commence_time).tz('America/Los_Angeles').format('h:mm A')}</td>
+              {disOdds(game)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function disOdds(game) {
+  const bookmakers = game.bookmakers;
+  const columns = bookmakers.map((bookmaker) => {
+    return (
+      <td key={bookmaker.key}>
+        <h2>{bookmaker.title}</h2>
+        <table>
+          <tbody>
+            {bookmaker.markets.map((market) => (
+              <React.Fragment key={market.key}>
+                <tr>
+                  <td colSpan="2"><h3>{market.key}</h3></td>
+                </tr>
+                {market.outcomes.map((outcome) => (
+                  <tr key={outcome.name}>
+                    <td>{outcome.name}</td>
+                    <td>{outcome.price}</td>
+                  </tr>
+                ))}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </td>
+    );
+  });
+
+  return <>{columns}</>;
 }
 
 export default function Home() {
@@ -47,6 +91,7 @@ export default function Home() {
       </Head>
       <div>
         {Games()}
+
       </div>
     </>
   )
