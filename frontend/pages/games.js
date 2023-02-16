@@ -58,3 +58,49 @@ export default function PersonPage() {
     </table>
   )
 }
+
+function disGames(aGames){
+
+  const gamesArray = Object.values(aGames)
+
+  return  (
+    <div>
+      <tr>
+          <th>Matchup</th>
+    </tr>
+    
+    {gamesArray.map((game) => (
+      <tr key={game.id}>
+        <td>{game.home_team}</td>
+        <td>{game.away_team}</td>
+        <td>{moment.utc(game.commence_time).tz('America/Los_Angeles').format('MMM DD-YY h:mm A')}</td>
+        <td></td>
+      </tr>
+    ))}
+  </div>
+  )
+
+
+}
+
+function disOdds(game){
+
+  return(
+  <td>
+  {game.bookmakers.map((bookmaker) => (
+    <div key={bookmaker.key}>
+      <tr><h2>{bookmaker.title}</h2></tr>
+      {bookmaker.markets.map((market) => (
+        <div key={market.key}>
+          <h3>{market.key}</h3>
+          {market.outcomes.map((outcome) => (
+            <p key={outcome.name}>{outcome.name}: {outcome.price}</p>
+          ))}
+        </div>
+      ))}
+    </div>
+  ))}
+</td>
+)
+
+}
