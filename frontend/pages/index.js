@@ -41,8 +41,73 @@ function Games() {
   console.log('hiiii')
   console.log('heloo')
   if (isLoading) return <div>Loading...</div>
-  
-  return(disGames(games))
+  console.log('heloo')
+  const columns = [
+    {
+      key: "name",
+      label: "NAME",
+    },
+    {
+      key: "role",
+      label: "ROLE",
+    },
+    {
+      key: "status",
+      label: "STATUS",
+    },
+  ];
+  const rows = [
+    {
+      key: "1",
+      name: "Tony Reichert",
+      role: "CEO",
+      status: "Active",
+    },
+    {
+      key: "2",
+      name: "Zoey Lang",
+      role: "Technical Lead",
+      status: "Paused",
+    },
+    {
+      key: "3",
+      name: "Jane Fisher",
+      role: "Senior Developer",
+      status: "Active",
+    },
+    {
+      key: "4",
+      name: "William Howard",
+      role: "Community Manager",
+      status: "Vacation",
+    },
+  ];
+  return (
+    <Table
+      aria-label="Example table with dynamic content"
+      css={{
+        height: "auto",
+        minWidth: "100%",
+      }}
+    >
+      <Table.Header columns={columns}>
+        {(column) => (
+          <Table.Column key={column.key}>{column.label}</Table.Column>
+        )}
+      </Table.Header>
+      <Table.Body items={rows}>
+        {(item) => (
+          <Table.Row key={item.key}>
+            {(columnKey) => <Table.Cell>{item[columnKey]}</Table.Cell>}
+          </Table.Row>
+        )}
+      </Table.Body>
+    </Table>
+  );
+
+
+
+  //return(disGames(games))
   
 
  
@@ -107,39 +172,20 @@ function disOdds(game) {
 }
 
 //NEXTUI function to display the matchups
-function tabGames(aGames){
-const gamesArray=Object.values(aGames)
-return(
+function tabGames(){
+  //const gamesArray = Object.values(games) 
+  return (
     <Table
-      striped
-      sticked
-      aria-label="Example static striped collection table"
-      selectionMode="multiple"
+      aria-label="Example table with static content"
       css={{
         height: "auto",
         minWidth: "100%",
       }}
-      >
-      <Table.Header>
-        <Table.Row>
-          <Table.Cell>Matchup</Table.Cell>
-          <Table.Cell>{moment.tz('America/Los_Angeles').format('MMM DD, YYYY h:mm A')}</Table.Cell>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-          {gamesArray.map((game) => (
-            <Table.Row key={game.id}>
-              <Table.Cell>{game.away_team} <br /> VS. {game.home_team}</Table.Cell>
-              <Table.Cell className={styles.myC}>{moment.utc(game.commence_time).tz('America/Los_Angeles').format('h:mm A')}</Table.Cell>
-              {tabOdds(game)}
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
-
-
-      )
+    >
+    </Table>
+  );
 }
+
 
 //Next UI function to display the odds
 function tabOdds(game) {
