@@ -20,7 +20,8 @@ const myDarkTheme = createTheme({
       background: '#1d1d1d',
       text: '#fff',
       // you can also create your own color
-      myDarkColor: '#ff4ecd'
+      myDarkColor: '#ff4ecd',
+      candyRed: "D21404"
       // ...  more colors
     },
     space: {},
@@ -42,48 +43,126 @@ function Games() {
   console.log('heloo')
   if (isLoading) return <div>Loading...</div>
   console.log('heloo')
+  const gamesArray = Object.values(games)
+
+  const matchColumnRender = (item) => (
+    <Table.Cell>
+      {item['away_team']}<br></br> @ {item['home_team']}
+    </Table.Cell>
+  );
+
+  const timeColumnRender = (item) => (
+    <Table.Cell>
+      {moment.utc(item['commence_time']).tz('America/Los_Angeles').format('MMM D, h:mm A')}
+    </Table.Cell>
+  );
+
+  //Render for DraftKings. Gathers all the information from 'item' and returns it in a displayable format
+  const dkColumnRender = (item) => {
+    const searchResult = markSearch(item, "draftkings");
+    const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
+    const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
+
+  
+    if (searchResult !== false && spreadmarket && spreadmarket.outcomes) {
+    return (
+      <Table.Cell>
+        {spreadmarket.outcomes.map((outcome) => (
+          <div key={outcome.name}>{outcome.price} {outcome.point} {outcome.name}</div>
+        ))}
+        {h2hmarket.outcomes.map((outcome) => (
+          <div key={outcome.name}>{outcome.price} {outcome.name}</div>
+        ))}
+      </Table.Cell>
+    );
+  }
+  
+    return <Table.Cell>N/A</Table.Cell>;
+  };
+
+  //Render for barstool. Gathers all the information from 'item' and returns it in a displayable format
+  const bsColumnRender = (item) => {
+    const searchResult = markSearch(item, "barstool");
+    const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
+    const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
+
+  
+    if (searchResult !== false && spreadmarket && spreadmarket.outcomes) {
+    return (
+      <Table.Cell>
+        {spreadmarket.outcomes.map((outcome) => (
+          <div key={outcome.name}>{outcome.price} {outcome.point} {outcome.name}</div>
+        ))}
+        {h2hmarket.outcomes.map((outcome) => (
+          <div key={outcome.name}>{outcome.price} {outcome.name}</div>
+        ))}
+      </Table.Cell>
+    );
+  }
+  
+    return <Table.Cell>N/A</Table.Cell>;
+  };
+
+  //Render for fanduel. Gathers all the information from 'item' and returns it in a displayable format
+  const fdColumnRender = (item) => {
+    const searchResult = markSearch(item, "fanduel");
+    const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
+    const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
+
+  
+    if (searchResult !== false && spreadmarket && spreadmarket.outcomes) {
+    return (
+      <Table.Cell>
+        {spreadmarket.outcomes.map((outcome) => (
+          <div key={outcome.name}>{outcome.price} {outcome.point} {outcome.name}</div>
+        ))}
+        {h2hmarket.outcomes.map((outcome) => (
+          <div key={outcome.name}>{outcome.price} {outcome.name}</div>
+        ))}
+      </Table.Cell>
+    );
+  }
+  
+    return <Table.Cell>N/A</Table.Cell>;
+  };
+
+
+  //constants for the column. Includes key, label and which renderer to use
   const columns = [
     {
-      key: "name",
-      label: "NAME",
+      key: "away_team",
+      label: "Matchup",
+      render: matchColumnRender
     },
     {
-      key: "role",
-      label: "ROLE",
+      key: "commence_time",
+      label: "Time",
+      render: timeColumnRender
     },
     {
-      key: "status",
-      label: "STATUS",
+      key: "dk",
+      label: "Draft Kings",
+      render: dkColumnRender
+    },
+    {
+      key: "book",
+      label: "Fan Duel",
+      render: fdColumnRender
+    },
+    {
+      key: "book",
+      label: "Barstool",
+      render: bsColumnRender
     },
   ];
-  const rows = [
-    {
-      key: "1",
-      name: "Tony Reichert",
-      role: "CEO",
-      status: "Active",
-    },
-    {
-      key: "2",
-      name: "Zoey Lang",
-      role: "Technical Lead",
-      status: "Paused",
-    },
-    {
-      key: "3",
-      name: "Jane Fisher",
-      role: "Senior Developer",
-      status: "Active",
-    },
-    {
-      key: "4",
-      name: "William Howard",
-      role: "Community Manager",
-      status: "Vacation",
-    },
-  ];
+ 
+  
+  //returns a completed table of all information regarding games and odds
   return (
     <Table
+      lined
+      headerLined
+      shadow={false}
       aria-label="Example table with dynamic content"
       css={{
         height: "auto",
@@ -95,12 +174,16 @@ function Games() {
           <Table.Column key={column.key}>{column.label}</Table.Column>
         )}
       </Table.Header>
-      <Table.Body items={rows}>
-        {(item) => (
-          <Table.Row key={item.key}>
-            {(columnKey) => <Table.Cell>{item[columnKey]}</Table.Cell>}
-          </Table.Row>
-        )}
+      <Table.Body items={gamesArray}>
+      {(item) => (
+    <Table.Row key={item.key}>
+      {columns.map((column) =>
+        column.render ? column.render(item) : (
+          <Table.Cell key={column.key}>{item[column.key]}</Table.Cell>
+        )
+      )}
+    </Table.Row>
+  )}
       </Table.Body>
     </Table>
   );
@@ -112,6 +195,18 @@ function Games() {
 
  
 }
+
+//quick search function to find the desired market inside a matchup
+function markSearch(games, searchKey) {
+  const bookmaker = games.bookmakers.find((bookmaker) => bookmaker.key === searchKey);
+  return bookmaker ? bookmaker : false;
+}
+
+
+
+
+
+
 
 ///HTML verion of displaying the matchups
 function disGames(aGames){
