@@ -4,9 +4,10 @@ import { Inter } from '@next/font/google'
 import styles from '@/styles/Home.module.css'
 import useSWR from 'swr'
 import moment from 'moment-timezone'
-import React from 'react';
-import { NextUIProvider } from '@nextui-org/react';
-import { Table } from "@nextui-org/react";
+import React, { useEffect } from 'react';
+import { Checkbox, Avatar, Loading, Table, NextUIProvider, Tooltip} from "@nextui-org/react";
+import {Teams} from './teams.js'
+
 
 // 1. Import `createTheme`
 import { createTheme, Text } from "@nextui-org/react"
@@ -33,17 +34,49 @@ const myDarkTheme = createTheme({
 //Gathers data from our API and puts it into an array that then calls the display functions
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
-function Games() {
- 
-  const { data: games, error, isLoading } = useSWR('http://127.0.0.1:5000/getData', fetcher)
+function dataFetcher(words){
+const { data: games, error, isLoading } = useSWR('http://127.0.0.1:5000/getData', fetcher)
+  if (words === "games"){
+    return games
+  }
+  if (words === "error"){
+    return error
+  }
+  if (words === "isLoading"){
+    return isLoading
+  }
+  return (games,error,isLoading)
 
+}
+
+function sortByCommenceTime(events) {
+  return events.sort((a, b) => {
+    if (a.commence_time < b.commence_time) {
+      return -1;
+    }
+    if (a.commence_time > b.commence_time) {
+      return 1;
+    }
+    return 0;
+  });
+}
+
+function plusAdder(num){
+  if (num > 0){
+    return "+" + num
+  }
+  else return (num)
+}
+
+
+function gamesFun(logArray, games, error, isLoading) {
+  console.log('hi')  
   if (error) return <div>Failed to load</div>
-  console.log(JSON.stringify(games))
-  console.log('hiiii')
-  console.log('heloo')
-  if (isLoading) return <div>Loading...</div>
-  console.log('heloo')
-  const gamesArray = Object.values(games)
+  if (isLoading) return <Loading size = 'xl' />
+
+  const gamesArray1 = Object.values(games)
+  const gamesArray = sortByCommenceTime(gamesArray1)
+ 
 
   const matchColumnRender = (item) => (
     <Table.Cell>
@@ -57,78 +90,83 @@ function Games() {
     </Table.Cell>
   );
 
+  const imageColumnRender = (item) => {
+    const abbreviation = new Teams();
+    const hometeam = "/TeamIMG/" + abbreviation.getImgByName(item['home_team'])
+    const awayteam = "/TeamIMG/" + abbreviation.getImgByName(item['away_team'])
+
+    return(
+    <Table.Cell>
+      <Tooltip content={item['away_team']} 
+      rounded color="primary">
+    <Avatar
+          size="lg"
+          src={awayteam}
+          color="primary"
+        />
+      </Tooltip>
+      <Text></Text>
+      <Tooltip content={item['home_team']} rounded color="primary">
+    <Avatar
+          size="lg"
+          src={hometeam}
+          color="primary"
+        />
+        </Tooltip>
+  </Table.Cell>
+    )
+  };
+
+
   //Render for DraftKings. Gathers all the information from 'item' and returns it in a displayable format
-  const dkColumnRender = (item) => {
-    const searchResult = markSearch(item, "draftkings");
+  const dkColumnRender = (item, keystring) => {
+    const searchResult = item.bookmakers.find((bookmaker) => bookmaker.key === keystring);
+    const abbreviation = new Teams();
+    if (!searchResult) {
+      return <Table.Cell>N/A</Table.Cell>;
+    }
+  
     const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
     const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
-
+    let retMes = null;
   
-    if (searchResult !== false && spreadmarket && spreadmarket.outcomes) {
+    if (logArray.includes('moneyline') && h2hmarket) {
+      retMes = h2hmarket.outcomes.map((outcome) => (
+        <div key={outcome.name}><b>{outcome.price}</b> {plusAdder(outcome.point)} {abbreviation.getAbbByName(outcome.name)}</div>
+      ))
+    }
+  
+    if (logArray.includes('spread') && spreadmarket) {
+      const outcomes = spreadmarket.outcomes.map((outcome) => (
+        <div key={outcome.name}><b>{outcome.price}</b> {plusAdder(outcome.point)} {abbreviation.getAbbByName(outcome.name)}</div>
+      ));
+      retMes = retMes ? [...retMes, ...outcomes] : outcomes;
+    }
+  
+    if (!retMes) {
+      return (
+        <Table.Cell>
+          <div>No {logArray.includes('moneyline') ? 'H2H' : 'ML'} {logArray.includes('spread') ? 'Spread' : 'Spread'} Available</div>
+        </Table.Cell>
+      )
+    }
+  
     return (
       <Table.Cell>
-        {spreadmarket.outcomes.map((outcome) => (
-          <div key={outcome.name}>{outcome.price} {outcome.point} {outcome.name}</div>
-        ))}
-        {h2hmarket.outcomes.map((outcome) => (
-          <div key={outcome.name}>{outcome.price} {outcome.name}</div>
-        ))}
+        {retMes}
       </Table.Cell>
     );
-  }
   
-    return <Table.Cell>N/A</Table.Cell>;
   };
-
-  //Render for barstool. Gathers all the information from 'item' and returns it in a displayable format
-  const bsColumnRender = (item) => {
-    const searchResult = markSearch(item, "barstool");
-    const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
-    const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
-
   
-    if (searchResult !== false && spreadmarket && spreadmarket.outcomes) {
-    return (
-      <Table.Cell>
-        {spreadmarket.outcomes.map((outcome) => (
-          <div key={outcome.name}>{outcome.price} {outcome.point} {outcome.name}</div>
-        ))}
-        {h2hmarket.outcomes.map((outcome) => (
-          <div key={outcome.name}>{outcome.price} {outcome.name}</div>
-        ))}
-      </Table.Cell>
-    );
-  }
-  
-    return <Table.Cell>N/A</Table.Cell>;
-  };
-
-  //Render for fanduel. Gathers all the information from 'item' and returns it in a displayable format
-  const fdColumnRender = (item) => {
-    const searchResult = markSearch(item, "fanduel");
-    const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
-    const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
-
-  
-    if (searchResult !== false && spreadmarket && spreadmarket.outcomes) {
-    return (
-      <Table.Cell>
-        {spreadmarket.outcomes.map((outcome) => (
-          <div key={outcome.name}>{outcome.price} {outcome.point} {outcome.name}</div>
-        ))}
-        {h2hmarket.outcomes.map((outcome) => (
-          <div key={outcome.name}>{outcome.price} {outcome.name}</div>
-        ))}
-      </Table.Cell>
-    );
-  }
-  
-    return <Table.Cell>N/A</Table.Cell>;
-  };
-
 
   //constants for the column. Includes key, label and which renderer to use
   const columns = [
+    {
+      key:"images",
+      label:"",
+      render: imageColumnRender
+    },
     {
       key: "away_team",
       label: "Matchup",
@@ -140,20 +178,21 @@ function Games() {
       render: timeColumnRender
     },
     {
-      key: "dk",
+      key: "draftkings",
       label: "Draft Kings",
       render: dkColumnRender
     },
     {
-      key: "book",
+      key: "fanduel",
       label: "Fan Duel",
-      render: fdColumnRender
+      render: dkColumnRender
     },
     {
-      key: "book",
+      key: "barstool",
       label: "Barstool",
-      render: bsColumnRender
+      render: dkColumnRender
     },
+    
   ];
  
   
@@ -178,7 +217,7 @@ function Games() {
       {(item) => (
     <Table.Row key={item.key}>
       {columns.map((column) =>
-        column.render ? column.render(item) : (
+        column.render ? column.render(item, column.key) : (
           <Table.Cell key={column.key}>{item[column.key]}</Table.Cell>
         )
       )}
@@ -188,143 +227,15 @@ function Games() {
     </Table>
   );
 
-
-
-  //return(disGames(games))
-  
-
- 
-}
-
-//quick search function to find the desired market inside a matchup
-function markSearch(games, searchKey) {
-  const bookmaker = games.bookmakers.find((bookmaker) => bookmaker.key === searchKey);
-  return bookmaker ? bookmaker : false;
-}
-
-
-
-
-
-
-
-///HTML verion of displaying the matchups
-function disGames(aGames){
-
-  const gamesArray = Object.values(aGames)
-
-  return (
-    <div className={styles.tablecontainer}>
-    <table className={styles.myTable}>
-        <thead>
-          <tr>
-            <th>Matchup</th>
-            <th className={styles.myC}>{moment.tz('America/Los_Angeles').format('MMM DD, YYYY h:mm A')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {gamesArray.map((game) => (
-            <tr key={game.id}>
-              <td>{game.away_team} <br /> @ {game.home_team}</td>
-              <td className={styles.myC}>{moment.utc(game.commence_time).tz('America/Los_Angeles').format('h:mm A')}</td>
-              {disOdds(game)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-//HTML Function to disiplay each games odds
-function disOdds(game) {
-  const bookmakers = game.bookmakers;
-  const columns = bookmakers.map((bookmaker) => {
-    return (
-      <td key={bookmaker.key}>
-        <h2>{bookmaker.title}</h2>
-        <table>
-          <tbody>
-            {bookmaker.markets.map((market) => (
-              <React.Fragment key={market.key}>
-                <tr>
-                  <td colSpan="2"><h3>{market.key}</h3></td>
-                </tr>
-                {market.outcomes.map((outcome) => (
-                  <tr key={outcome.name}>
-                    <td>{outcome.name}</td>
-                    <td>{outcome.price}</td>
-                  </tr>
-                ))}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
-      </td>
-    );
-  });
-
-  return <>{columns}</>;
-}
-
-//NEXTUI function to display the matchups
-function tabGames(){
-  //const gamesArray = Object.values(games) 
-  return (
-    <Table
-      aria-label="Example table with static content"
-      css={{
-        height: "auto",
-        minWidth: "100%",
-      }}
-    >
-    </Table>
-  );
-}
-
-
-//Next UI function to display the odds
-function tabOdds(game) {
-  const bookmakers = game.bookmakers;
-  const columns = bookmakers.map((bookmaker) => {
-    return (
-      <Table.Cell key={bookmaker.key}>
-        <Table.Cell>{bookmaker.title}</Table.Cell>
-        <Table
-      striped
-      sticked
-      aria-label="Example static striped collection table"
-      selectionMode="multiple"
-      css={{
-        height: "auto",
-        minWidth: "100%",
-      }}
-      >
-          <Table.Body>
-            {bookmaker.markets.map((market) => (
-              <React.Fragment key={market.key}>
-                <Table.Row>
-                  <Table.Cell colSpan="2"><h3>{market.key}</h3></Table.Cell>
-                </Table.Row>
-                {market.outcomes.map((outcome) => (
-                  <Table.Row key={outcome.name}>
-                    <Table.Cell>{outcome.name}</Table.Cell>
-                    <Table.Cell>{outcome.price}</Table.Cell>
-                  </Table.Row>
-                ))}
-              </React.Fragment>
-            ))}
-          </Table.Body>
-        </Table>
-      </Table.Cell>
-    );
-  });
-
-  return <>{columns}</>;
 }
 
 
 ///First thing that runs that sets up that page and then calls various functions
 export default function Home() {
+  const [selected, setSelected] = React.useState(["moneyline", "spread"]);
+  const games = dataFetcher("games")
+  const error = dataFetcher("error")
+  const isLoading = dataFetcher("isLoading")
   return (
     <>
       <Head>
@@ -333,11 +244,29 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <NextUIProvider theme = {myDarkTheme}> {/* Wrap your top-level component with NextUIProvider */}
-        <div>
-          {Games()}
-        </div>
+
+      <Checkbox.Group
+      color="secondary"
+      label="Select category"
+      orientation="horizontal"
+      value={selected}
+      onChange={setSelected}
+      key = "checkbox"
+    >
+      <Checkbox value="moneyline">moneyline</Checkbox>
+      <Checkbox value="spread">spread</Checkbox>
+      {console.log(selected)}
+    </Checkbox.Group>
+    <Text>You're going to visit: {selected.join(', ')}</Text>
+
+
+      <NextUIProvider theme = {myDarkTheme}r> 
+      {
+     
+        gamesFun(selected, games,error,isLoading)
+      }
       </NextUIProvider>
+      
     </>
   )
 
