@@ -5,7 +5,7 @@ import styles from '@/styles/Home.module.css'
 import useSWR from 'swr'
 import moment from 'moment-timezone'
 import React, { useEffect } from 'react';
-import { Checkbox, Avatar, Loading, Table, NextUIProvider, Tooltip} from "@nextui-org/react";
+import { Radio, Avatar, Loading, Table, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {Teams} from './teams.js'
 
 
@@ -49,6 +49,7 @@ const { data: games, error, isLoading } = useSWR('http://127.0.0.1:5000/getData'
 
 }
 
+//sorts the games by commence time
 function sortByCommenceTime(events) {
   return events.sort((a, b) => {
     if (a.commence_time < b.commence_time) {
@@ -61,6 +62,7 @@ function sortByCommenceTime(events) {
   });
 }
 
+//adds pluses to numbers greater than 0
 function plusAdder(num){
   if (num > 0){
     return "+" + num
@@ -77,19 +79,21 @@ function gamesFun(logArray, games, error, isLoading) {
   const gamesArray1 = Object.values(games)
   const gamesArray = sortByCommenceTime(gamesArray1)
  
-
+  //returns teams
   const matchColumnRender = (item) => (
     <Table.Cell>
       {item['away_team']}<br></br> @ {item['home_team']}
     </Table.Cell>
   );
 
+  //returns matchup time
   const timeColumnRender = (item) => (
     <Table.Cell>
       {moment.utc(item['commence_time']).tz('America/Los_Angeles').format('MMM D, h:mm A')}
     </Table.Cell>
   );
 
+  //returns the avatars with logos for eaach team
   const imageColumnRender = (item) => {
     const abbreviation = new Teams();
     const hometeam = "/TeamIMG/" + abbreviation.getImgByName(item['home_team'])
@@ -102,15 +106,21 @@ function gamesFun(logArray, games, error, isLoading) {
     <Avatar
           size="lg"
           src={awayteam}
-          color="primary"
+          color="gradient"
+          bordered
+          zoomed
         />
       </Tooltip>
-      <Text></Text>
-      <Tooltip content={item['home_team']} rounded color="primary">
+      <div> </div>
+      <Tooltip content={item['home_team']}
+      rounded 
+      color="primary">
     <Avatar
           size="lg"
           src={hometeam}
-          color="primary"
+          color="gradient"
+          bordered
+          zoomed
         />
         </Tooltip>
   </Table.Cell>
@@ -120,6 +130,7 @@ function gamesFun(logArray, games, error, isLoading) {
 
   //Render for DraftKings. Gathers all the information from 'item' and returns it in a displayable format
   const dkColumnRender = (item, keystring) => {
+    //Finds the specific book for each game, if the isn't found it returns N/A
     const searchResult = item.bookmakers.find((bookmaker) => bookmaker.key === keystring);
     const abbreviation = new Teams();
     if (!searchResult) {
@@ -128,25 +139,33 @@ function gamesFun(logArray, games, error, isLoading) {
   
     const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
     const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
+    const totalsmarket = searchResult.markets.find((tmarket) => tmarket.key === 'totals');
     let retMes = null;
   
     if (logArray.includes('moneyline') && h2hmarket) {
       retMes = h2hmarket.outcomes.map((outcome) => (
-        <div key={outcome.name}><b>{outcome.price}</b> {plusAdder(outcome.point)} {abbreviation.getAbbByName(outcome.name)}</div>
+        <div key={outcome.name}><b>{plusAdder(outcome.price)}</b> {plusAdder(outcome.point)} {abbreviation.getAbbByName(outcome.name)}</div>
       ))
     }
   
     if (logArray.includes('spread') && spreadmarket) {
       const outcomes = spreadmarket.outcomes.map((outcome) => (
-        <div key={outcome.name}><b>{outcome.price}</b> {plusAdder(outcome.point)} {abbreviation.getAbbByName(outcome.name)}</div>
+        <div key={outcome.name}><b>{plusAdder(outcome.price)}</b> {plusAdder(outcome.point)} {abbreviation.getAbbByName(outcome.name)}</div>
       ));
       retMes = retMes ? [...retMes, ...outcomes] : outcomes;
+    }
+
+    if (logArray.includes('totals') && totalsmarket) {
+      const totoutcomes = totalsmarket.outcomes.map((outcome) => (
+        <div key={outcome.name}><b>{plusAdder(outcome.price)}</b> {outcome.point} {outcome.name}</div>
+      ))
+      retMes = retMes ? [...retMes, ...totoutcomes] : totoutcomes;
     }
   
     if (!retMes) {
       return (
         <Table.Cell>
-          <div>No {logArray.includes('moneyline') ? 'H2H' : 'ML'} {logArray.includes('spread') ? 'Spread' : 'Spread'} Available</div>
+          <div>Not Available</div>
         </Table.Cell>
       )
     }
@@ -163,11 +182,6 @@ function gamesFun(logArray, games, error, isLoading) {
   //constants for the column. Includes key, label and which renderer to use
   const columns = [
     {
-      key:"images",
-      label:"",
-      render: imageColumnRender
-    },
-    {
       key: "away_team",
       label: "Matchup",
       render: matchColumnRender
@@ -176,6 +190,11 @@ function gamesFun(logArray, games, error, isLoading) {
       key: "commence_time",
       label: "Time",
       render: timeColumnRender
+    },
+    {
+      key:"images",
+      label:"",
+      render: imageColumnRender
     },
     {
       key: "draftkings",
@@ -201,6 +220,7 @@ function gamesFun(logArray, games, error, isLoading) {
     <Table
       lined
       headerLined
+      bordered
       shadow={false}
       aria-label="Example table with dynamic content"
       css={{
@@ -230,42 +250,47 @@ function gamesFun(logArray, games, error, isLoading) {
 }
 
 
+
 ///First thing that runs that sets up that page and then calls various functions
 export default function Home() {
-  const [selected, setSelected] = React.useState(["moneyline", "spread"]);
+  const [selected, setSelected] = React.useState(['moneyline','spread','totals']);
   const games = dataFetcher("games")
   const error = dataFetcher("error")
   const isLoading = dataFetcher("isLoading")
+ 
+
+
+
   return (
     <>
       <Head>
         <title>Sports Betting App</title>
         <meta name="description" content="Generated by create next app" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/basketball.png" />
+        <h1 className={styles.title}>ARBITRAGE   <img src = 'lebron.png' width = '40px' height = '70px'></img></h1>
       </Head>
 
-      <Checkbox.Group
-      color="secondary"
-      label="Select category"
+      <Radio.Group
+      color="primary"
       orientation="horizontal"
       value={selected}
       onChange={setSelected}
       key = "checkbox"
+      ali
     >
-      <Checkbox value="moneyline">moneyline</Checkbox>
-      <Checkbox value="spread">spread</Checkbox>
+      <Radio value="moneyline">ML</Radio>
+      <Radio value="spread">Spread</Radio>
+      <Radio value="totals">O/U</Radio>
       {console.log(selected)}
-    </Checkbox.Group>
-    <Text>You're going to visit: {selected.join(', ')}</Text>
+    </Radio.Group>
 
 
-      <NextUIProvider theme = {myDarkTheme}r> 
-      {
-     
-        gamesFun(selected, games,error,isLoading)
-      }
-      </NextUIProvider>
+    
+        <div key={selected}>
+          <NextUIProvider>{gamesFun(selected, games, error, isLoading)}</NextUIProvider>
+        </div>
+      
       
     </>
   )

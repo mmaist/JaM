@@ -6,7 +6,12 @@
   padding: 6rem;
   min-height: 100vh;
 }
-
+@font-face {
+  font-family: 'boucher';
+  src: url('/Prox-Regular.otf') format('otf');
+  font-weight: normal;
+  font-style: normal;
+}
 
 .tablecontainer {
   width: 100%;
@@ -22,4 +27,9 @@
   width : 1000px;
   height: 200px;
 
+}
+
+.title {
+  font-family: 'boucher', futura;
+ 
 }
