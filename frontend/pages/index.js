@@ -70,6 +70,18 @@ function plusAdder(num){
   else return (num)
 }
 
+function getGamesWithinSameDay(gamesArray) {
+  const currentDate = new Date();
+  const startOfDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+  const endOfDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1);
+
+  return gamesArray.filter((game) => {
+    const gameTime = new Date(game.commence_time);
+    return gameTime >= startOfDay && gameTime < endOfDay;
+  });
+}
+
+
 
 function gamesFun(logArray, games, error, isLoading) {
   console.log('hi')  
@@ -77,7 +89,8 @@ function gamesFun(logArray, games, error, isLoading) {
   if (isLoading) return <Loading size = 'xl' />
 
   const gamesArray1 = Object.values(games)
-  const gamesArray = sortByCommenceTime(gamesArray1)
+  const gamesArray2 = sortByCommenceTime(gamesArray1)
+  const gamesArray = getGamesWithinSameDay(gamesArray2)
  
   //returns teams
   const matchColumnRender = (item) => (
@@ -129,7 +142,7 @@ function gamesFun(logArray, games, error, isLoading) {
 
 
   //Render for DraftKings. Gathers all the information from 'item' and returns it in a displayable format
-  const dkColumnRender = (item, keystring) => {
+  const bookColumnRender = (item, keystring) => {
     //Finds the specific book for each game, if the isn't found it returns N/A
     const searchResult = item.bookmakers.find((bookmaker) => bookmaker.key === keystring);
     const abbreviation = new Teams();
@@ -180,7 +193,8 @@ function gamesFun(logArray, games, error, isLoading) {
   
 
   //constants for the column. Includes key, label and which renderer to use
-  const columns = [
+   //constants for the column. Includes key, label and which renderer to use
+   const columns = [
     {
       key: "away_team",
       label: "Matchup",
@@ -197,20 +211,101 @@ function gamesFun(logArray, games, error, isLoading) {
       render: imageColumnRender
     },
     {
+      key: "bestOddsForGame",
+      label: "Best Odds",
+      
+    },
+    {
       key: "draftkings",
       label: "Draft Kings",
-      render: dkColumnRender
+      render: bookColumnRender
     },
     {
       key: "fanduel",
       label: "Fan Duel",
-      render: dkColumnRender
+      render: bookColumnRender
     },
     {
       key: "barstool",
       label: "Barstool",
-      render: dkColumnRender
+      render: bookColumnRender
     },
+    {
+      label: "William Hill (US)",
+      key: "williamhill_us",
+      render: bookColumnRender
+    
+    },
+    {
+      label: "LowVig.ag",
+      key: "lowvig",
+      render: bookColumnRender
+    },
+    {
+      key: "betonlineag",
+      label: "BetOnline.ag",
+      render: bookColumnRender
+    },
+    {
+      label: "WynnBET",
+      key: "wynnbet",
+      render: bookColumnRender
+    },
+    {
+      key: "bovada",
+      label: "Bovada",
+      render: bookColumnRender
+    },
+    {
+      key: "betmgm",
+      label: "BetMGM",
+      render: bookColumnRender
+    },
+    {
+      key: "circasports",
+      label: "Circa Sports",
+      render: bookColumnRender
+    },
+    {
+      key: "superbook",
+      label: "SuperBook",
+      render: bookColumnRender
+    },
+    {
+      key: "betus",
+      label: "BetUS",
+      render: bookColumnRender
+    },
+    {
+      key: "pointsbetus",
+      label: "PointsBet (US)",
+      render: bookColumnRender
+    },
+    {
+      key: "mybookieag",
+      label: "MyBookie.ag",
+      render: bookColumnRender
+    },
+    {
+      key: "twinspires",
+      label: "Twinspires",
+      render: bookColumnRender
+    },
+    {
+      key: "betrivers",
+      label: "BetRivers",
+      render: bookColumnRender
+    },
+    {
+      key: "unibet_us",
+      label: "Unibet",
+      render: bookColumnRender
+    },
+    {
+      key: "sugarhouse",
+      label: "SugarHouse",
+      render: bookColumnRender
+    }
     
   ];
  
