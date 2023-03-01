@@ -1,4 +1,4 @@
-import { Radio, Avatar, Loading, Table, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Radio, Avatar, Loading, Card,Grid, Table, Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import moment from 'moment-timezone'
 import {Teams} from '../components/teams.js'
 
@@ -26,19 +26,19 @@ const imageColumnRender = (item) => {
         <Tooltip content={item['away_team']} 
         rounded color="primary">
     <Avatar
-            size="lg"
+            size="xl"
             src={awayteam}
             color="gradient"
             bordered
             zoomed
         />
         </Tooltip>
-        <div> </div>
+        <div style={{ height: "20px" }} />
         <Tooltip content={item['home_team']}
         rounded 
         color="primary">
     <Avatar
-            size="lg"
+            size="xl"
             src={hometeam}
             color="gradient"
             bordered
@@ -56,40 +56,49 @@ const bookColumnRender = (item, keystring, {selected}) => {
     const abbreviation = new Teams();
 
     const searchResult = item.bookmakers.find((bookmaker) => bookmaker.key === keystring);
-    const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
-    const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
-    const totalsmarket = searchResult.markets.find((tmarket) => tmarket.key === 'totals');
-
+   
     let retMes = null;
 
     if (!searchResult) {
-        return <Table.Cell>N/A</Table.Cell>;
+        return (
+            <Table.Cell>
+            {h2hRender('-')}
+            {h2hRender('-')}
+            </Table.Cell>
+            )
     }
-
+    if (searchResult){
+        const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
+        const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
+        const totalsmarket = searchResult.markets.find((tmarket) => tmarket.key === 'totals');
+        
     if (selected=="moneyline" && h2hmarket) {
-        retMes = h2hmarket.outcomes.map((outcome) => (
-        <div key={outcome.name}><b>{plusAdder(outcome.price)}</b> {plusAdder(outcome.point)} {abbreviation.getAbbByName(outcome.name)}</div>
+        const sortOutcomes1 = sortOutcomesByTeamName(h2hmarket.outcomes,item);
+        retMes = sortOutcomes1.map((outcome) => (
+            h2hRender(plusAdder(outcome.price))
         ))
     }
 
     if (selected=="spread" && spreadmarket) {
-        const outcomes = spreadmarket.outcomes.map((outcome) => (
-        <div key={outcome.name}><b>{plusAdder(outcome.price)}</b> {plusAdder(outcome.point)} {abbreviation.getAbbByName(outcome.name)}</div>
+        const sortOutcomes2 = sortOutcomesByTeamName(spreadmarket.outcomes,item);
+        const outcomes1 = sortOutcomes2.map((outcome) => (
+        spreadRender(plusAdder(outcome.point),plusAdder(outcome.price))
         ));
-        retMes = retMes ? [...retMes, ...outcomes] : outcomes;
+        retMes = retMes ? [...retMes, ...outcomes1] : outcomes1;
     }
 
     if (selected=="totals" && totalsmarket) {
-        const totoutcomes = totalsmarket.outcomes.map((outcome) => (
-        <div key={outcome.name}><b>{plusAdder(outcome.price)}</b> {outcome.point} {outcome.name}</div>
+        const outcomes2 = totalsmarket.outcomes.map((outcome) => (
+        totRender(outcome.point,plusAdder(outcome.price), outcome.name )
         ))
-        retMes = retMes ? [...retMes, ...totoutcomes] : totoutcomes;
+        retMes = retMes ? [...retMes, ...outcomes2] : outcomes2;
     }
 
     if (!retMes) {
         return (
         <Table.Cell>
-            <div>Not Available</div>
+        {h2hRender('-')}
+        {h2hRender('-')}
         </Table.Cell>
         )
     }
@@ -99,8 +108,95 @@ const bookColumnRender = (item, keystring, {selected}) => {
         {retMes}
         </Table.Cell>
     );
+    }
 
 };
+
+
+const bestOddsRender = (item) => {
+    let MLmax = 0;
+    let MLmaxName = null;
+    let foundPositivePrice = false;
+    let MLmin = -100000000;
+    let MLminName = null;
+
+    let SPmax = 0;
+    let SPmaxName = null;
+    let foundPositiveSpread = false;
+    let SPmin = -100000000;
+    let SPminName = null;
+    let SPmaxPrice = -10000000;
+    let SPminPrice = -1000000;
+
+    let TOmax = 100000000;
+    let TOmaxName = null;
+    let foundPositiveTotal = false;
+    let TOmin = 0.0;
+    let TOminName = null; 
+    let TOmaxPrice = -10000000;
+    let TOminPrice = -1000000;
+
+  
+    item.bookmakers.forEach((bookmaker) => {
+      const h2hmarket = bookmaker.markets.find((hmarket) => hmarket.key === 'h2h');
+      if (h2hmarket){
+      h2hmarket.outcomes.forEach((outcome) => {
+        if (outcome.price > 0 && (outcome.price > MLmax || !foundPositivePrice)) {
+          MLmax = outcome.price;
+          MLmaxName = bookmaker.title;
+          foundPositivePrice = true;
+        }
+        if (outcome.price < 0 && (outcome.price > MLmin )){
+          MLmin = outcome.price;
+          MLminName = bookmaker.title;
+        }
+      });
+      }
+      const spreadmarket = bookmaker.markets.find((smarket) => smarket.key === 'spreads');
+      if (spreadmarket){
+      spreadmarket.outcomes.forEach((outcome) => {
+        if (outcome.point > 0 && (outcome.point > SPmax || !foundPositiveSpread || (outcome.point === SPmax && outcome.price > SPmaxPrice))) {
+          SPmaxPrice = outcome.price;
+          SPmax = outcome.point;
+          SPmaxName = bookmaker.title;
+          foundPositiveSpread = true;
+        }
+        if (outcome.point < 0 && (outcome.point > SPmin || (outcome.point === SPmin && outcome.price > SPminPrice) )){
+          SPminPrice = outcome.price;  
+          SPmin = outcome.point;
+          SPminName = bookmaker.title;
+        }
+      });
+      }
+      const totalsmarket = bookmaker.markets.find((tmarket) => tmarket.key === 'totals');
+      if (totalsmarket){
+      totalsmarket.outcomes.forEach((outcome) => {
+        if ((outcome.name ==='Over') && ((outcome.point < TOmax)|| (outcome.price > TOmaxPrice && outcome.point === TOmax))){
+          TOmax = outcome.point;
+          TOmaxName = bookmaker.title;
+          TOmaxPrice = outcome.price;
+        }
+        if ((outcome.name ==='Under') && ((outcome.point > TOmin) || (outcome.price > TOminPrice && outcome.point === TOmin))){
+          TOmin = outcome.point;
+          TOminName = bookmaker.title;
+          TOminPrice = outcome.price;
+        }
+
+    })
+  }
+});
+  
+    return (
+      <Table.Cell>
+        <b>ML:</b>{MLmaxName}  {plusAdder(MLmax)}<br></br>
+                {MLminName}  {MLmin}<br></br>
+        <b>Spread:</b> {SPmaxName}  {plusAdder(SPmax)}<br></br>
+                      {SPminName}  {SPmin}<br></br>
+         <b>Over:</b>{TOmaxName}  {(TOmax)}  {TOmaxPrice}<br></br>
+         <b>Under:</b>{TOminName}  {TOmin}   {TOminPrice}
+      </Table.Cell>
+    );
+  };
   
    //constants for the column. Includes key, label and which renderer to use
 export const Columns = (selected)=> {
@@ -116,14 +212,14 @@ export const Columns = (selected)=> {
         render: timeColumnRender
     },
     {
+        key: "bestOddsForGame",
+        label: "Best Odds",
+        render: bestOddsRender
+    },
+    {
         key:"images",
         label:"",
         render: imageColumnRender
-    },
-    {
-        key: "bestOddsForGame",
-        label: "Best Odds",
-        
     },
     {
         key: "draftkings",
@@ -225,4 +321,79 @@ function plusAdder(num){
         return "+" + num
     }
     else return (num)
+}
+
+function sortOutcomesByTeamName(outcomes, items) {
+    console.log(items['home_team']);
+    return outcomes.slice().sort((a, b) => {
+      if (a.name === items['home_team']) return 1;
+      if (b.name === items['home_team']) return -1;
+      return 0;
+    });
+  }
+
+function spreadRender(spreadNum, spreadPrice) {
+    return (
+      <Card variant="bordered"
+        css={{ width: "85px", height: "73px", margin: '10px' }}
+        isHoverable>
+        <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
+          <Text
+            size={25}
+            css={{ textAlign: 'center', lineHeight: '1.5' }}>
+                <b>{spreadNum}</b>
+          </Text>
+          <Text
+            size={15}
+            textAlign="center"
+            css={{ textAlign: 'center', lineHeight: '1.2' }}>
+                {spreadPrice}
+          </Text>
+        </Card.Body>
+      </Card>
+    );
+}
+
+function h2hRender(h2hPrice) {
+
+    return (
+            <Card variant="bordered"
+            css = {{width: "85px", height: "73px", margin: '10px'}}
+            isHoverable>
+                <Card.Body css = {{height: '73px', justifyContent: "center", overflow: "hidden"}}>
+                    <Text 
+                        size={25}
+                        css = {{textAlign:'center'}}>
+                           <b> {h2hPrice}</b>
+                    </Text>
+                </Card.Body>
+            </Card>
+      );
+
+}
+function totRender(totNum, totPrice, totName) {
+    let ou = "o"
+    if (totName === "Under"){
+        ou = "u"
+    }
+
+    return (
+        <Card variant="bordered"
+        css={{ width: "85px", height: "73px", margin: '10px' }}
+        isHoverable>
+            <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
+                <Text
+                size={21}
+                css={{ textAlign: 'center', lineHeight: '1.5' }}>
+                    <b>{ou}{totNum}</b>
+                </Text>
+                <Text
+                size={11}
+                textAlign="center"
+                css={{ textAlign: 'center', lineHeight: '1.2' }}>
+                    {totPrice}
+                </Text>
+            </Card.Body>
+        </Card>
+    );
 }

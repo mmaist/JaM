@@ -1,4 +1,4 @@
-import { Radio, Avatar, Loading, Table, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Radio, Avatar, Loading, Table,Card,Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {Columns} from '../components/columns.js'
 import React from "react";
 
@@ -27,7 +27,6 @@ export function gamesFun(games, error, isLoading) {
             <Radio value="moneyline">ML</Radio>
             <Radio value="spread">Spread</Radio>
             <Radio value="totals">O/U</Radio>
-            {console.log(selected)}
         </Radio.Group>    
         
         <Table
@@ -45,7 +44,7 @@ export function gamesFun(games, error, isLoading) {
         
         <Table.Header columns={tableColumns}>
             {(column) => (
-            <Table.Column key={column.key}>{column.label}</Table.Column>
+            <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
             )}
         </Table.Header>
         <Table.Body items={gamesArray}>
@@ -53,7 +52,7 @@ export function gamesFun(games, error, isLoading) {
         <Table.Row key={item.key}>
         {tableColumns.map((column) =>
             column.render ? column.render(item, column.key, {selected}) : (
-            <Table.Cell key={column.key}>{item[column.key]}</Table.Cell>
+            <Table.Cell key={column.key} align = "center">{item[column.key]}</Table.Cell>
             )
         )}
         </Table.Row>

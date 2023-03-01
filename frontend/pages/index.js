@@ -5,7 +5,7 @@ import styles from '@/styles/Home.module.css'
 import useSWR from 'swr'
 
 import React, { useEffect } from 'react';
-import { Avatar, Loading, Table, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Avatar, Loading, Table, Card, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {gamesFun} from '../components/table.js'
 
 
