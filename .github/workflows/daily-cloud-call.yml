@@ -4,7 +4,7 @@ name: Manual workflow
 on:
   workflow_dispatch:
   schedule:
-  - cron: "0 19 * * *"
+  - cron: "45 16 * * *"
 
 jobs:
   build:
