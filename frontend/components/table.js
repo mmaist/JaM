@@ -33,7 +33,7 @@ export function gamesFun(games, error, isLoading) {
         <Table
         lined
         key={selected}
-        headerLined
+        
         bordered
         shadow={false}
         aria-label="Example table with dynamic content"

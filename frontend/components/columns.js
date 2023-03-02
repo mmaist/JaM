@@ -190,15 +190,15 @@ const bestOddsRender = (item, keystring, {selected}) => {
 )});
     if (selected == "moneyline"){
         return(
-            <Table.Cell css={{ backgroundColor: '#f2f2f2' }}>
-                {spreadRender(plusAdder(MLmax),MLmaxName)}
-                {spreadRender(plusAdder(MLmin),MLminName)}
+            <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
+                 {spreadRender(plusAdder(MLmax),MLmaxName)}
+                 {spreadRender(plusAdder(MLmin),MLminName)}
             </Table.Cell>
         )
     }
     if (selected == "totals"){
         return(
-            <Table.Cell>
+            <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
                 {bestTotRender(TOmax,TOmaxPrice,TOmaxName,"Over")}
                 {bestTotRender(TOmin,TOminPrice,TOminName,"Under")}
             </Table.Cell>
@@ -206,7 +206,7 @@ const bestOddsRender = (item, keystring, {selected}) => {
         }
     if (selected == "spread"){
         return(
-            <Table.Cell>
+            <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
                 {bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"")}
                 {bestTotRender(plusAdder(SPmin),SPminPrice,SPminName,"")}
             </Table.Cell>
@@ -332,7 +332,7 @@ function sortOutcomesByTeamName(outcomes, items) {
 function spreadRender(spreadNum, spreadPrice) {
     return (
       <Card variant="bordered"
-        css={{ width: "85px", height: "73px", margin: '10px' }}
+        css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
         isHoverable>
         <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
           <Text
@@ -355,7 +355,7 @@ function h2hRender(h2hPrice) {
 
     return (
             <Card variant="bordered"
-            css = {{width: "85px", height: "73px", margin: '10px'}}
+            css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
             isHoverable>
                 <Card.Body css = {{height: '73px', justifyContent: "center", overflow: "hidden"}}>
                     <Text 
@@ -376,7 +376,7 @@ function totRender(totNum, totPrice, totName) {
 
     return (
         <Card variant="bordered"
-        css={{ width: "85px", height: "73px", margin: '10px' }}
+        css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
         isHoverable>
             <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
                 <Text
@@ -406,7 +406,7 @@ function bestTotRender(totNum, totPrice, totName, totName2) {
 
     return (
         <Card variant="bordered"
-        css={{ width: "85px", height: "73px", margin: '10px' }}
+        css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
         isHoverable>
             <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
                 <Text
