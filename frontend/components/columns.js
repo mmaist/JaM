@@ -113,7 +113,7 @@ const bookColumnRender = (item, keystring, {selected}) => {
 };
 
 
-const bestOddsRender = (item) => {
+const bestOddsRender = (item, keystring, {selected}) => {
     let MLmax = 0;
     let MLmaxName = null;
     let foundPositivePrice = false;
@@ -137,54 +137,81 @@ const bestOddsRender = (item) => {
     let TOminPrice = -1000000;
 
   
-    item.bookmakers.forEach((bookmaker) => {
-      const h2hmarket = bookmaker.markets.find((hmarket) => hmarket.key === 'h2h');
-      if (h2hmarket){
-      h2hmarket.outcomes.forEach((outcome) => {
-        if (outcome.price > 0 && (outcome.price > MLmax || !foundPositivePrice)) {
-          MLmax = outcome.price;
-          MLmaxName = bookmaker.title;
-          foundPositivePrice = true;
-        }
-        if (outcome.price < 0 && (outcome.price > MLmin )){
-          MLmin = outcome.price;
-          MLminName = bookmaker.title;
-        }
-      });
-      }
-      const spreadmarket = bookmaker.markets.find((smarket) => smarket.key === 'spreads');
-      if (spreadmarket){
-      spreadmarket.outcomes.forEach((outcome) => {
-        if (outcome.point > 0 && (outcome.point > SPmax || !foundPositiveSpread || (outcome.point === SPmax && outcome.price > SPmaxPrice))) {
-          SPmaxPrice = outcome.price;
-          SPmax = outcome.point;
-          SPmaxName = bookmaker.title;
-          foundPositiveSpread = true;
-        }
-        if (outcome.point < 0 && (outcome.point > SPmin || (outcome.point === SPmin && outcome.price > SPminPrice) )){
-          SPminPrice = outcome.price;  
-          SPmin = outcome.point;
-          SPminName = bookmaker.title;
-        }
-      });
-      }
-      const totalsmarket = bookmaker.markets.find((tmarket) => tmarket.key === 'totals');
-      if (totalsmarket){
-      totalsmarket.outcomes.forEach((outcome) => {
-        if ((outcome.name ==='Over') && ((outcome.point < TOmax)|| (outcome.price > TOmaxPrice && outcome.point === TOmax))){
-          TOmax = outcome.point;
-          TOmaxName = bookmaker.title;
-          TOmaxPrice = outcome.price;
-        }
-        if ((outcome.name ==='Under') && ((outcome.point > TOmin) || (outcome.price > TOminPrice && outcome.point === TOmin))){
-          TOmin = outcome.point;
-          TOminName = bookmaker.title;
-          TOminPrice = outcome.price;
-        }
+    item.bookmakers.forEach((bookmaker) => { 
+     Columns(selected).forEach((column) => {
+        if (column.key === bookmaker.key) {
+            const h2hmarket = bookmaker.markets.find((hmarket) => hmarket.key === 'h2h');
+            if (h2hmarket){
+            h2hmarket.outcomes.forEach((outcome) => {
+                if (outcome.price > 0 && (outcome.price > MLmax || !foundPositivePrice)) {
+                MLmax = outcome.price;
+                MLmaxName = column.abb;
+                foundPositivePrice = true;
+                }
+                if (outcome.price < 0 && (outcome.price > MLmin )){
+                MLmin = outcome.price;
+                MLminName = column.abb;
+                }
+            });
+            }
+            const spreadmarket = bookmaker.markets.find((smarket) => smarket.key === 'spreads');
+            if (spreadmarket){
+            spreadmarket.outcomes.forEach((outcome) => {
+                if (outcome.point > 0 && (outcome.point > SPmax || !foundPositiveSpread || (outcome.point === SPmax && outcome.price > SPmaxPrice))) {
+                SPmaxPrice = outcome.price;
+                SPmax = outcome.point;
+                SPmaxName = column.abb;
+                foundPositiveSpread = true;
+                }
+                if (outcome.point < 0 && (outcome.point > SPmin || (outcome.point === SPmin && outcome.price > SPminPrice) )){
+                SPminPrice = outcome.price;  
+                SPmin = outcome.point;
+                SPminName = column.abb;
+                }
+            });
+            }
+            const totalsmarket = bookmaker.markets.find((tmarket) => tmarket.key === 'totals');
+            if (totalsmarket){
+            totalsmarket.outcomes.forEach((outcome) => {
+                if ((outcome.name ==='Over') && ((outcome.point < TOmax)|| (outcome.price > TOmaxPrice && outcome.point === TOmax))){
+                TOmax = outcome.point;
+                TOmaxName = column.abb;
+                TOmaxPrice = outcome.price;
+                }
+                if ((outcome.name ==='Under') && ((outcome.point > TOmin) || (outcome.price > TOminPrice && outcome.point === TOmin))){
+                TOmin = outcome.point;
+                TOminName = column.abb;
+                TOminPrice = outcome.price;
+                }
 
-    })
-  }
-});
+            })
+        }
+    }}
+)});
+    if (selected == "moneyline"){
+        return(
+            <Table.Cell>
+                {spreadRender(plusAdder(MLmax),MLmaxName)}
+                {spreadRender(plusAdder(MLmin),MLminName)}
+            </Table.Cell>
+        )
+    }
+    if (selected == "totals"){
+        return(
+            <Table.Cell>
+                {bestTotRender(TOmax,TOmaxPrice,TOmaxName,"Over")}
+                {bestTotRender(TOmin,TOminPrice,TOminName,"Under")}
+            </Table.Cell>
+        )
+        }
+    if (selected == "spread"){
+        return(
+            <Table.Cell>
+                {bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"")}
+                {bestTotRender(plusAdder(SPmin),SPminPrice,SPminName,"")}
+            </Table.Cell>
+        )
+    }
   
     return (
       <Table.Cell>
@@ -212,105 +239,75 @@ export const Columns = (selected)=> {
         render: timeColumnRender
     },
     {
-        key: "bestOddsForGame",
-        label: "Best Odds",
-        render: bestOddsRender
-    },
-    {
         key:"images",
         label:"",
         render: imageColumnRender
     },
     {
+        key: "bestOddsForGame",
+        label: "Best Odds",
+        selected: {selected},
+        render: bestOddsRender
+    },
+    {
         key: "draftkings",
         label: "Draft Kings",
-        selected: {selected},
+        abb: "DK",
         render: bookColumnRender
     },
     {
         key: "fanduel",
         label: "Fan Duel",
+        abb: "FD",
         render: bookColumnRender
     },
     {
         key: "barstool",
         label: "Barstool",
+        abb: "BS",
         render: bookColumnRender
     },
     {
         label: "William Hill (US)",
         key: "williamhill_us",
+        abb: "WH",
         render: bookColumnRender
 
     },
     {
-        label: "LowVig.ag",
-        key: "lowvig",
-        render: bookColumnRender
-    },
-    {
-        key: "betonlineag",
-        label: "BetOnline.ag",
-        render: bookColumnRender
-    },
-    {
-        label: "WynnBET",
-        key: "wynnbet",
-        render: bookColumnRender
-    },
-    {
-        key: "bovada",
-        label: "Bovada",
-        render: bookColumnRender
-    },
-    {
         key: "betmgm",
         label: "BetMGM",
-        render: bookColumnRender
-    },
-    {
-        key: "circasports",
-        label: "Circa Sports",
+        abb: "bMGM",
         render: bookColumnRender
     },
     {
         key: "superbook",
         label: "SuperBook",
+        abb: "SB",
         render: bookColumnRender
     },
     {
         key: "betus",
         label: "BetUS",
+        abb: "bUS",
         render: bookColumnRender
     },
     {
         key: "pointsbetus",
         label: "PointsBet (US)",
+        abb: "PB",
         render: bookColumnRender
     },
     {
         key: "mybookieag",
         label: "MyBookie.ag",
-        render: bookColumnRender
-    },
-    {
-        key: "twinspires",
-        label: "Twinspires",
-        render: bookColumnRender
-    },
-    {
-        key: "betrivers",
-        label: "BetRivers",
+        abb: "MB.ag",
         render: bookColumnRender
     },
     {
         key: "unibet_us",
         label: "Unibet",
-        render: bookColumnRender
-    },
-    {
-        key: "sugarhouse",
-        label: "SugarHouse",
+        abb: "Uni",
         render: bookColumnRender
     }
 
@@ -392,6 +389,42 @@ function totRender(totNum, totPrice, totName) {
                 textAlign="center"
                 css={{ textAlign: 'center', lineHeight: '1.2' }}>
                     {totPrice}
+                </Text>
+            </Card.Body>
+        </Card>
+    );
+}
+
+function bestTotRender(totNum, totPrice, totName, totName2) {
+    let ou = ""
+    if (totName2 === "Under"){
+        ou = "u"
+    }
+    if (totName2 === "Over"){
+        ou = "o"
+    }
+
+    return (
+        <Card variant="bordered"
+        css={{ width: "85px", height: "73px", margin: '10px' }}
+        isHoverable>
+            <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
+                <Text
+                size={21}
+                css={{ textAlign: 'center', lineHeight: '1.3' }}>
+                    <b>{ou}{totNum}</b>
+                </Text>
+                <Text
+                size={17}
+                textAlign="center"
+                css={{ textAlign: 'center', lineHeight: '1.2' }}>
+                    {totPrice}
+                </Text>
+                <Text
+                size={11}
+                textAlign="center"
+                css={{ textAlign: 'center', lineHeight: '1.3' }}>
+                    {totName}
                 </Text>
             </Card.Body>
         </Card>

@@ -23,7 +23,7 @@ def getData():
     gamecounter = 0
     db = firestore.Client(project='peppy-sensor-375905')
 
-    query = db.collection(u'NBA').order_by(u'commence_time', direction=firestore.Query.DESCENDING).limit(8).stream()
+    query = db.collection(u'NBA').order_by(u'commence_time', direction=firestore.Query.DESCENDING).limit(10).stream()
 
     for doc in query:
         gamecounter = gamecounter + 1
