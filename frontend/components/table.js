@@ -27,7 +27,8 @@ export function gamesFun(games, error, isLoading) {
             <Radio value="moneyline">ML</Radio>
             <Radio value="spread">Spread</Radio>
             <Radio value="totals">O/U</Radio>
-        </Radio.Group>    
+        </Radio.Group> 
+           
         
         <Table
         lined
