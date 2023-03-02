@@ -190,7 +190,7 @@ const bestOddsRender = (item, keystring, {selected}) => {
 )});
     if (selected == "moneyline"){
         return(
-            <Table.Cell>
+            <Table.Cell css={{ backgroundColor: '#f2f2f2' }}>
                 {spreadRender(plusAdder(MLmax),MLmaxName)}
                 {spreadRender(plusAdder(MLmin),MLminName)}
             </Table.Cell>

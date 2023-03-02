@@ -41,6 +41,7 @@ export function gamesFun(games, error, isLoading) {
             height: "auto",
             minWidth: "100%",
         }}
+        
         >
         
         <Table.Header columns={tableColumns}>
@@ -53,7 +54,7 @@ export function gamesFun(games, error, isLoading) {
         <Table.Row key={item.key}>
         {tableColumns.map((column) =>
             column.render ? column.render(item, column.key, {selected}) : (
-            <Table.Cell key={column.key} align = "center">{item[column.key]}</Table.Cell>
+            <Table.Cell key={column.key} align = "center" >{item[column.key]}</Table.Cell>
             )
         )}
         </Table.Row>
