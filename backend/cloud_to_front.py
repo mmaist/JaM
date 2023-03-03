@@ -6,6 +6,7 @@ import os
 import functions_framework
 from flask import Flask
 import datetime
+
 app = Flask(__name__)
 
 # Use a service account.

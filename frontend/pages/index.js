@@ -35,7 +35,7 @@ const myDarkTheme = createTheme({
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
 function useDataFetcher(words, fetchered){
-const { data: games, error, isLoading } = useSWR('http://127.0.0.1:5000/getData', fetchered)
+const { data: games, error, isLoading } = useSWR('https://jam-pcynlb5fzq-uc.a.run.app/getData', fetchered)
   if (words === "games"){
     return games
   }
