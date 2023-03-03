@@ -106,7 +106,7 @@ static getDerivedStateFromError(error) {
 
 componentDidCatch(error, errorInfo) {
   // You can also log the error to an error reporting service
-  logErrorToMyService(error, errorInfo);
+  console.log(error, errorInfo);
 }
 
 render() {
