@@ -115,11 +115,12 @@ const bookColumnRender = (item, keystring, {selected}) => {
 
 
 const bestOddsRender = (item, keystring, {selected}) => {
-    let MLmax = 0;
+    let MLmax = -100000000;
     let MLmaxName = null;
     let foundPositivePrice = false;
     let MLmin = -100000000;
     let MLminName = null;
+    let MLTeam = null;
 
     let SPmax = 0;
     let SPmaxName = null;
@@ -128,6 +129,7 @@ const bestOddsRender = (item, keystring, {selected}) => {
     let SPminName = null;
     let SPmaxPrice = -10000000;
     let SPminPrice = -1000000;
+    let spreadTeam = null;
 
     let TOmax = 100000000;
     let TOmaxName = null;
@@ -139,17 +141,19 @@ const bestOddsRender = (item, keystring, {selected}) => {
 
   
     item.bookmakers.forEach((bookmaker) => { 
+        console.log('bookmaker:', bookmaker);
      Columns(selected).forEach((column) => {
         if (column.key === bookmaker.key) {
             const h2hmarket = bookmaker.markets.find((hmarket) => hmarket.key === 'h2h');
+            console.log('h2hmarket:', h2hmarket);
+
             if (h2hmarket){
             h2hmarket.outcomes.forEach((outcome) => {
-                if (outcome.price > 0 && (outcome.price > MLmax || !foundPositivePrice)) {
+                if (outcome.name === item['away_team'] && (outcome.price > MLmax)) {
                 MLmax = outcome.price;
                 MLmaxName = column.abb;
-                foundPositivePrice = true;
                 }
-                if (outcome.price < 0 && (outcome.price > MLmin )){
+                if (outcome.name === item['home_team'] && (outcome.price > MLmin )){
                 MLmin = outcome.price;
                 MLminName = column.abb;
                 }
@@ -158,13 +162,14 @@ const bestOddsRender = (item, keystring, {selected}) => {
             const spreadmarket = bookmaker.markets.find((smarket) => smarket.key === 'spreads');
             if (spreadmarket){
             spreadmarket.outcomes.forEach((outcome) => {
-                if (outcome.point > 0 && (outcome.point > SPmax || !foundPositiveSpread || (outcome.point === SPmax && outcome.price > SPmaxPrice))) {
+                if (outcome.name === item['away_team'] && (outcome.point > SPmax || !foundPositiveSpread || (outcome.point === SPmax && outcome.price > SPmaxPrice))) {
                 SPmaxPrice = outcome.price;
                 SPmax = outcome.point;
                 SPmaxName = column.abb;
                 foundPositiveSpread = true;
+                MLTeam = outcome.name;
                 }
-                if (outcome.point < 0 && (outcome.point > SPmin || (outcome.point === SPmin && outcome.price > SPminPrice) )){
+                if (outcome.name === item['home_team']&& (outcome.point > SPmin || (outcome.point === SPmin && outcome.price > SPminPrice) )){
                 SPminPrice = outcome.price;  
                 SPmin = outcome.point;
                 SPminName = column.abb;
@@ -178,6 +183,7 @@ const bestOddsRender = (item, keystring, {selected}) => {
                 TOmax = outcome.point;
                 TOmaxName = column.abb;
                 TOmaxPrice = outcome.price;
+                spreadTeam = outcome.name;
                 }
                 if ((outcome.name ==='Under') && ((outcome.point > TOmin) || (outcome.price > TOminPrice && outcome.point === TOmin))){
                 TOmin = outcome.point;
@@ -189,11 +195,23 @@ const bestOddsRender = (item, keystring, {selected}) => {
         }
     }}
 )});
+let homeMLren = null;
+let awayMLren = null;
+awayMLren = spreadRender(plusAdder(MLmax),MLmaxName);
+homeMLren = spreadRender(plusAdder(MLmin),MLminName);
+
+
+let homeSPren = null;
+let awaySPren = null;
+homeSPren = bestTotRender(plusAdder(SPmin),SPminPrice,SPminName,"")
+awaySPren = bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"");
+
+
     if (selected == "moneyline"){
         return(
             <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
-                 {spreadRender(plusAdder(MLmax),MLmaxName)}
-                 {spreadRender(plusAdder(MLmin),MLminName)}
+                {awayMLren}
+                {homeMLren}
             </Table.Cell>
         )
     }
@@ -208,20 +226,15 @@ const bestOddsRender = (item, keystring, {selected}) => {
     if (selected == "spread"){
         return(
             <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
-                {bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"")}
-                {bestTotRender(plusAdder(SPmin),SPminPrice,SPminName,"")}
+                {awaySPren}
+                {homeSPren}
             </Table.Cell>
         )
     }
   
     return (
       <Table.Cell>
-        <b>ML:</b>{MLmaxName}  {plusAdder(MLmax)}<br></br>
-                {MLminName}  {MLmin}<br></br>
-        <b>Spread:</b> {SPmaxName}  {plusAdder(SPmax)}<br></br>
-                      {SPminName}  {SPmin}<br></br>
-         <b>Over:</b>{TOmaxName}  {(TOmax)}  {TOmaxPrice}<br></br>
-         <b>Under:</b>{TOminName}  {TOmin}   {TOminPrice}
+        Best Odds N/A
       </Table.Cell>
     );
   };
@@ -322,7 +335,6 @@ function plusAdder(num){
 }
 
 function sortOutcomesByTeamName(outcomes, items) {
-    console.log(items['home_team']);
     return outcomes.slice().sort((a, b) => {
       if (a.name === items['home_team']) return 1;
       if (b.name === items['home_team']) return -1;

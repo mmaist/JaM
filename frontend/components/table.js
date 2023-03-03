@@ -2,7 +2,7 @@ import { Radio, Avatar,Dropdown, Loading, Table,Card,Text, NextUIProvider, Toolt
 import {Columns} from '../components/columns.js'
 import React from "react";
 
-export function gamesFun(games, error, isLoading) {
+export function GamesFun(games, error, isLoading) {
     const [selectedValue, setSelected] = React.useState(new Set(["moneyline"]));
     const selected = React.useMemo(
       () => Array.from(selectedValue).join(", ").replaceAll("_", " "),
