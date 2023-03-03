@@ -1,15 +1,18 @@
-import { Radio, Avatar, Loading, Table,Card,Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Radio, Avatar,Dropdown, Loading, Table,Card,Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {Columns} from '../components/columns.js'
 import React from "react";
 
 export function gamesFun(games, error, isLoading) {
-    const [selected, setSelected] = React.useState("moneyline");
-    console.log('hi')  
+    const [selectedValue, setSelected] = React.useState(new Set(["moneyline"]));
+    const selected = React.useMemo(
+      () => Array.from(selectedValue).join(", ").replaceAll("_", " "),
+      [selectedValue]
+    );
+    
     if (error) return <div>Failed to load</div>
     if (isLoading) return <Loading size = 'xl' />
 
     const tableColumns = Columns(selected)
-
     const gamesArray1 = Object.values(games)
     const gamesArray2 = sortByCommenceTime(gamesArray1)
     const gamesArray = getGamesWithinSameDay(gamesArray2)
@@ -17,33 +20,40 @@ export function gamesFun(games, error, isLoading) {
     //returns a completed table of all information regarding games and odds
     return (
     <div>
-        <Radio.Group
-        color="primary"
-        orientation="horizontal"
-        value={selected}
-        onChange={setSelected}
-        key = "checkbox"
-        >
-            <Radio value="moneyline">ML</Radio>
-            <Radio value="spread">Spread</Radio>
-            <Radio value="totals">O/U</Radio>
-        </Radio.Group> 
-           
         
+        <Dropdown key = "ddown">
+        <Dropdown.Button shadow color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '14px' }}>
+            {selectedValue}
+        </Dropdown.Button>
+        <Dropdown.Menu
+            aria-label="Single selection actions"
+            color="success"
+            disallowEmptySelection
+            selectionMode="single"
+            variant="shadow"
+            selectedKey={selectedValue}
+            onSelectionChange={setSelected}
+            css={{ backgroundColor: '#8ff2aa'}}
+            >
+            <Dropdown.Item key="moneyline">Moneyline</Dropdown.Item>
+            <Dropdown.Item key="spread">Spread</Dropdown.Item>
+            <Dropdown.Item key="totals">O/U</Dropdown.Item>
+        </Dropdown.Menu>
+        </Dropdown>
+        <div style={{ margin: '10px 0' }}></div>
+           
         <Table
         lined
         key={selected}
-        
-        bordered
         shadow={false}
+        sticked
         aria-label="Example table with dynamic content"
         css={{
             height: "auto",
-            minWidth: "100%",
+            minWidth: "100%",    
         }}
-        
         >
-        
+            {console.log("hih" + selected,{selected})}
         <Table.Header columns={tableColumns}>
             {(column) => (
             <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
@@ -75,7 +85,6 @@ function getGamesWithinSameDay(gamesArray) {
         const gameTime = new Date(game.commence_time);
         return gameTime >= startOfDay && gameTime < endOfDay;
     });
-
 }
 //sorts the games by commence time
 function sortByCommenceTime(events) {

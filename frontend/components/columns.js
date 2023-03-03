@@ -1,17 +1,18 @@
 import { Radio, Avatar, Loading, Card,Grid, Table, Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import moment from 'moment-timezone'
 import {Teams} from '../components/teams.js'
+import styles from '@/styles/Home.module.css'
 
 const matchColumnRender = (item) => (
-    <Table.Cell>
-      {item['away_team']}<br></br> @ {item['home_team']}
+    <Table.Cell >
+      <div className={styles.title}>{item['away_team']}<br></br> @ {item['home_team']}</div>
     </Table.Cell>
 );
 
   //returns matchup time
 const timeColumnRender = (item) => (
     <Table.Cell>
-        {moment.utc(item['commence_time']).tz('America/Los_Angeles').format('MMM D, h:mm A')}
+       <div className={styles.title}> {moment.utc(item['commence_time']).tz('America/Los_Angeles').format('MMM D, h:mm A')}</div>
     </Table.Cell>
 );
 
@@ -28,7 +29,7 @@ const imageColumnRender = (item) => {
     <Avatar
             size="xl"
             src={awayteam}
-            color="gradient"
+            color="success"
             bordered
             zoomed
         />
@@ -40,7 +41,7 @@ const imageColumnRender = (item) => {
     <Avatar
             size="xl"
             src={hometeam}
-            color="gradient"
+            color="success"
             bordered
             zoomed
         />
@@ -337,13 +338,13 @@ function spreadRender(spreadNum, spreadPrice) {
         <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
           <Text
             size={25}
-            css={{ textAlign: 'center', lineHeight: '1.5' }}>
+            css={{ textAlign: 'center', lineHeight: '1.3' }}>
                 <b>{spreadNum}</b>
           </Text>
           <Text
-            size={15}
+            size={14}
             textAlign="center"
-            css={{ textAlign: 'center', lineHeight: '1.2' }}>
+            css={{ textAlign: 'center', lineHeight: '1.5' }}>
                 {spreadPrice}
           </Text>
         </Card.Body>
@@ -357,7 +358,7 @@ function h2hRender(h2hPrice) {
             <Card variant="bordered"
             css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
             isHoverable>
-                <Card.Body css = {{height: '73px', justifyContent: "center", overflow: "hidden"}}>
+                <Card.Body css = {{height: '73px', justifyContent: "center", overflow: "hidden",}}>
                     <Text 
                         size={25}
                         css = {{textAlign:'center'}}>
@@ -380,13 +381,12 @@ function totRender(totNum, totPrice, totName) {
         isHoverable>
             <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
                 <Text
-                size={21}
-                css={{ textAlign: 'center', lineHeight: '1.5' }}>
+                size={22}
+                css={{ textAlign: 'center', lineHeight: '1.7'}}>
                     <b>{ou}{totNum}</b>
                 </Text>
                 <Text
-                size={11}
-                textAlign="center"
+                size={14}
                 css={{ textAlign: 'center', lineHeight: '1.2' }}>
                     {totPrice}
                 </Text>
@@ -416,12 +416,11 @@ function bestTotRender(totNum, totPrice, totName, totName2) {
                 </Text>
                 <Text
                 size={17}
-                textAlign="center"
                 css={{ textAlign: 'center', lineHeight: '1.2' }}>
                     {totPrice}
                 </Text>
                 <Text
-                size={11}
+                size={13}
                 textAlign="center"
                 css={{ textAlign: 'center', lineHeight: '1.3' }}>
                     {totName}
