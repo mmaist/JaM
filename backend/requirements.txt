@@ -2,3 +2,4 @@ functions-framework==3.*
 google-cloud-firestore
 requests
 flask
+gunicorn
