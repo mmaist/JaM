@@ -26,8 +26,7 @@ const { data: games, error, isLoading } = useSWR('https://jam-pcynlb5fzq-uc.a.ru
 
 }
 
-function timeDisplayer() {
-  const timezone = 'America/Los_Angeles'; // Pacific Time Zone (PST)
+function timeDisplayer(timezone) {
   const now = moment().tz(timezone); // Get the current time in the specified timezone
   const today = now.format('YYYY-MM-DD');
   const today845 = moment(`${today} 08:45:00`, 'YYYY-MM-DD HH:mm:ss').tz(timezone);
@@ -49,11 +48,18 @@ export default function Home() {
 
   return (
     <>
-
       <div>
+      <Head>
+        <title>ARBITRAGE</title>
+        <link rel="icon" href="/basketball.png" />
+        </Head>
+        <h1 style={{ display: 'flex', alignItems: 'center' }}>ARBITRAGE<img alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' /></h1>
+        <h3 style={{ position: 'absolute', top: 10, right: 10 }}>Odds last updated:</h3>
+        <h4 style={{ position: 'absolute', top: 40, right: 10 }}>{timeDisplayer('America/Los_Angeles')}</h4>
+      
       <ErrorBoundary>
       {GamesFun(games, error, isLoading)}
-</ErrorBoundary>
+      </ErrorBoundary>
       </div>
             
       
