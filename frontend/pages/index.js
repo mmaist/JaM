@@ -50,12 +50,13 @@ export default function Home() {
     <>
       <div>
       <Head>
-        <title>ARBITRAGE</title>
+        <title>ARBITRAGE v1.0</title>
         <link rel="icon" href="/basketball.png" />
         </Head>
-        <h1 style={{ display: 'flex', alignItems: 'center' }}>ARBITRAGE<img alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' /></h1>
+        <h1 style={{ display: 'flex', alignItems: 'center' }}>ARBITRAGE v1.0<img alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' /></h1>
         {//<h3 style={{ position: 'absolute', top: 10, right: 10 }}>Odds last updated:</h3>
-        //<h4 style={{ position: 'absolute', top: 40, right: 10 }}>{timeDisplayer('America/Los_Angeles')}</h4>}
+        //<h4 style={{ position: 'absolute', top: 40, right: 10 }}>{timeDisplayer('America/Los_Angeles')}</h4>
+      }
       
       <ErrorBoundary>
       {GamesFun(games, error, isLoading)}
