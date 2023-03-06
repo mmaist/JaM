@@ -2,12 +2,8 @@ import { Radio, Avatar,Dropdown, Loading, Table,Card,Text, NextUIProvider, Toolt
 import {Columns} from '../components/columns.js'
 import React from "react";
 
-export function GamesFun(games, error, isLoading) {
-    const [selectedValue, setSelected] = React.useState(new Set(["moneyline"]));
-    const selected = React.useMemo(
-      () => Array.from(selectedValue).join(", ").replaceAll("_", " "),
-      [selectedValue]
-    );
+export function GamesFun(games, error, isLoading, selected, league) {
+    
     
     if (error) return <div>Failed to load</div>
     if (isLoading) return <Loading size = 'xl' />
@@ -21,30 +17,10 @@ export function GamesFun(games, error, isLoading) {
     return (
     <div>
         
-        <Dropdown key = "ddown">
-        <Dropdown.Button shadow color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '14px' }}>
-            {selectedValue}
-        </Dropdown.Button>
-        <Dropdown.Menu
-            aria-label="Single selection actions"
-            color="success"
-            disallowEmptySelection
-            selectionMode="single"
-            variant="shadow"
-            selectedKey={selectedValue}
-            onSelectionChange={setSelected}
-            css={{ backgroundColor: '#8ff2aa'}}
-            >
-            <Dropdown.Item key="moneyline">Moneyline</Dropdown.Item>
-            <Dropdown.Item key="spread">Spread</Dropdown.Item>
-            <Dropdown.Item key="totals">O/U</Dropdown.Item>
-        </Dropdown.Menu>
-        </Dropdown>
         <div style={{ margin: '10px 0' }}></div>
            
         <Table
         lined
-        key={selected}
         shadow={false}
         sticked
         aria-label="Example table with dynamic content"
@@ -63,7 +39,7 @@ export function GamesFun(games, error, isLoading) {
         {(item) => (
         <Table.Row key={item.key}>
         {tableColumns.map((column) =>
-            column.render ? column.render(item, column.key, {selected}) : (
+            column.render ? column.render(item, column.key, {selected}, {league}) : (
             <Table.Cell key={column.key} align = "center" >{item[column.key]}</Table.Cell>
             )
         )}
