@@ -17,7 +17,7 @@ def after_request(response):
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
   return response
 
-@app.route('/getData')
+@app.route('/NBA/getData')
 def getData():
     
     father_dict = {}

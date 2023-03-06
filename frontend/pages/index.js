@@ -11,7 +11,7 @@ import {GamesFun} from '../components/table.js'
 //Gathers data from our API and puts it into an array that then calls the display functions
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
-function useDataFetcher(words, fetchered){
+function useDataFetcher(words, fetchered,league){
 const { data: games, error, isLoading } = useSWR('https://jam-pcynlb5fzq-uc.a.run.app/getData', fetchered)
   if (words === "games"){
     return games
@@ -39,9 +39,9 @@ function timeDisplayer(timezone) {
 
 ///First thing that runs that sets up that page and then calls various functions
 export default function Home() {
-  const games = useDataFetcher("games",fetcher)
-  const error = useDataFetcher("error",fetcher)
-  const isLoading = useDataFetcher("isLoading",fetcher)
+  const NBAgames = useDataFetcher("games",fetcher, "NBA")
+  const NBAerror = useDataFetcher("error",fetcher, "NBA")
+  const NBAisLoading = useDataFetcher("isLoading",fetcher, "NBA")
  
 
 
@@ -59,7 +59,7 @@ export default function Home() {
       }
       
       <ErrorBoundary>
-      {GamesFun(games, error, isLoading)}
+      {GamesFun(NBAgames, NBAerror, NBAisLoading)}
       </ErrorBoundary>
       </div>
             
