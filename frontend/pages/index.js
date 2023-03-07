@@ -12,7 +12,7 @@ import {GamesFun} from '../components/table.js'
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
 function useDataFetcher(words, fetchered,league){
-const { data: games, error, isLoading } = useSWR('https://nba-scores-pcynlb5fzq-wl.a.run.app'+league+'data', fetchered)
+const { data: games, error, isLoading } = useSWR('https://jam-pcynlb5fzq-uc.a.run.app/'+league+'data', fetchered)
   if (words === "games"){                        
     return games
   }
