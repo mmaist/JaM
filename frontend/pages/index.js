@@ -5,14 +5,14 @@ import styles from '@/styles/Home.module.css'
 import useSWR from 'swr'
 import moment from 'moment-timezone'
 import React, { useEffect } from 'react';
-import { Avatar, Loading, Table, Card, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Avatar, Loading,Dropdown, Table, Card, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {GamesFun} from '../components/table.js'
 
 //Gathers data from our API and puts it into an array that then calls the display functions
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
-function useDataFetcher(words, fetchered){
-const { data: games, error, isLoading } = useSWR('https://jam-pcynlb5fzq-uc.a.run.app/getData', fetchered)
+function useDataFetcher(words, fetchered,league){
+const { data: games, error, isLoading } = useSWR('https://jam-pcynlb5fzq-uc.a.run.app/get'+league+'data', fetchered)
   if (words === "games"){
     return games
   }
@@ -39,33 +39,80 @@ function timeDisplayer(timezone) {
 
 ///First thing that runs that sets up that page and then calls various functions
 export default function Home() {
-  const games = useDataFetcher("games",fetcher)
-  const error = useDataFetcher("error",fetcher)
-  const isLoading = useDataFetcher("isLoading",fetcher)
  
+ 
+  const [formatValue, setforSelected] = React.useState(new Set(["moneyline"]));
+  const formatselected = React.useMemo(
+    () => Array.from(formatValue).join(", ").replaceAll("_", " "),
+    [formatValue]
+  );
 
+  const [leagueValue, setleagueSelected] = React.useState(new Set(["NBA"]));
+  const leagueselected = React.useMemo(
+    () => Array.from(leagueValue).join(", ").replaceAll("_", " "),
+    [leagueValue]
+  );
 
+  const NBAgames = useDataFetcher("games",fetcher, leagueselected)
+  const NBAerror = useDataFetcher("error",fetcher, leagueselected)
+  const NBAisLoading = useDataFetcher("isLoading",fetcher, leagueselected)
 
   return (
     <>
-      <div>
-      <Head>
-        <title>ARBITRAGE v1.0</title>
-        <link rel="icon" href="/basketball.png" />
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <Head>
+          <title>ARBITRAGE v1.0</title>
+          <link rel="icon" href="/basketball.png" />
         </Head>
-        <h1 style={{ display: 'flex', alignItems: 'center' }}>ARBITRAGE v1.0<img alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' /></h1>
-        {//<h3 style={{ position: 'absolute', top: 10, right: 10 }}>Odds last updated:</h3>
-        //<h4 style={{ position: 'absolute', top: 40, right: 10 }}>{timeDisplayer('America/Los_Angeles')}</h4>
-      }
-      
-      <ErrorBoundary>
-      {GamesFun(games, error, isLoading)}
-      </ErrorBoundary>
+        <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 12 }}>
+          ARBITRAGE v1.1<img alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
+        </h1>
+        <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '14px' }}>
+          <Dropdown key="format">
+            <Dropdown.Button solid color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '20px',marginRight: '14px', marginTop: '18px' }}>
+              {formatselected}
+            </Dropdown.Button>
+            <Dropdown.Menu
+              aria-label="Single selection actions"
+              color="success"
+              disallowEmptySelection
+              selectionMode="single"
+              selectedKey={formatValue}
+              onSelectionChange={setforSelected}
+              css={{ backgroundColor: '#8ff2aa'}}
+            >
+              <Dropdown.Item key="moneyline">Moneyline</Dropdown.Item>
+              <Dropdown.Item key="spread">Spread</Dropdown.Item>
+              <Dropdown.Item key="total">Total</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+
+          <Dropdown key="league" style={{ marginLeft: '14px' }}>
+            <Dropdown.Button solid color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px', marginTop: '18px' }}>
+              {leagueValue}
+            </Dropdown.Button>
+            <Dropdown.Menu
+              aria-label="Single selection actions"
+              color="success"
+              disallowEmptySelection
+              selectionMode="single"
+              selectedKey={leagueValue}
+              onSelectionChange={setleagueSelected}
+              css={{ backgroundColor: '#8ff2aa'}}
+            >
+              <Dropdown.Item key="NBA">NBA</Dropdown.Item>
+              <Dropdown.Item key="NHL">NHL</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </div>
       </div>
-            
-      
+      <div style={{ margin: '0px 0' }}></div>
+      <ErrorBoundary key={formatselected + leagueselected}>
+        {GamesFun(NBAgames, NBAerror, NBAisLoading,formatselected, leagueselected)}
+      </ErrorBoundary>
     </>
-  )
+  );
+  
 
 }
 

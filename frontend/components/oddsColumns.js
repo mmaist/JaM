@@ -1,6 +1,7 @@
 import { Radio, Avatar, Loading, Card,Grid, Table, Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import moment from 'moment-timezone'
-import {Teams} from '../components/teams.js'
+import {NBAteams} from './NBAteams.js'
+import {NHLteams} from './NHLteams.js'
 import styles from '@/styles/Home.module.css'
 
 const matchColumnRender = (item) => (
@@ -17,10 +18,15 @@ const timeColumnRender = (item) => (
 );
 
 //returns the avatars with logos for eaach team
-const imageColumnRender = (item) => {
-    const abbreviation = new Teams();
-    const hometeam = "/TeamIMG/" + abbreviation.getImgByName(item['home_team'])
-    const awayteam = "/TeamIMG/" + abbreviation.getImgByName(item['away_team'])
+const imageColumnRender = (item, keystring, {selected}, {league}) => {
+    let abbreviation;
+        if (league === "NHL") {
+            abbreviation = new NHLteams();
+        } else {
+            abbreviation = new NBAteams();
+        }
+    const hometeam = "/"+league+"img/" + abbreviation.getImgByName(item['home_team'])
+    const awayteam = "/"+league+"img/" + abbreviation.getImgByName(item['away_team'])
 
     return(
     <Table.Cell>
@@ -52,9 +58,14 @@ const imageColumnRender = (item) => {
 
 
 //Render for DraftKings. Gathers all the information from 'item' and returns it in a displayable format
-const bookColumnRender = (item, keystring, {selected}) => {
+const bookColumnRender = (item, keystring, {selected},league) => {
     //Finds the specific book for each game, if the isn't found it returns N/A
-    const abbreviation = new Teams();
+    let abbreviation;
+    if (league === "NHL") {
+            abbreviation = new NHLteams();
+    } else {
+            abbreviation = new NBAteams();
+    }
 
     const searchResult = item.bookmakers.find((bookmaker) => bookmaker.key === keystring);
    
@@ -88,7 +99,7 @@ const bookColumnRender = (item, keystring, {selected}) => {
         retMes = retMes ? [...retMes, ...outcomes1] : outcomes1;
     }
 
-    if (selected=="totals" && totalsmarket) {
+    if (selected=="total" && totalsmarket) {
         const outcomes2 = totalsmarket.outcomes.map((outcome) => (
         totRender(outcome.point,plusAdder(outcome.price), outcome.name )
         ))
@@ -215,7 +226,7 @@ awaySPren = bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"");
             </Table.Cell>
         )
     }
-    if (selected == "totals"){
+    if (selected == "total"){
         return(
             <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
                 {bestTotRender(TOmax,TOmaxPrice,TOmaxName,"Over")}
