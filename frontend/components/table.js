@@ -1,5 +1,5 @@
 import { Radio, Avatar,Dropdown, Loading, Table,Card,Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
-import {Columns} from '../components/columns.js'
+import {Columns} from '../components/oddsColumns.js'
 import React from "react";
 
 export function GamesFun(games, error, isLoading, selected, league) {

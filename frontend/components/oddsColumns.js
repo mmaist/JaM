@@ -187,7 +187,7 @@ const bestOddsRender = (item, keystring, {selected}) => {
                 }
             });
             }
-            const totalsmarket = bookmaker.markets.find((tmarket) => tmarket.key === 'total');
+            const totalsmarket = bookmaker.markets.find((tmarket) => tmarket.key === 'totals');
             if (totalsmarket){
             totalsmarket.outcomes.forEach((outcome) => {
                 if ((outcome.name ==='Over') && ((outcome.point < TOmax)|| (outcome.price > TOmaxPrice && outcome.point === TOmax))){
@@ -226,7 +226,7 @@ awaySPren = bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"");
             </Table.Cell>
         )
     }
-    if (selected == "totals"){
+    if (selected == "total"){
         return(
             <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
                 {bestTotRender(TOmax,TOmaxPrice,TOmaxName,"Over")}
