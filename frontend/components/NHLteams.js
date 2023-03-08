@@ -108,7 +108,7 @@ export class NHLteams {
                 key: "minnesota-wild"
               },
               {
-                name: "Montreal Canadiens",
+                name: "Montréal Canadiens",
                 abbreviation: "MTL",
                 image: "montreal-canadiens.png",
                 color: "#FFD700",
@@ -124,7 +124,7 @@ export class NHLteams {
             {
                 name: "New Jersey Devils",
                 abbreviation: "NJD",
-                image: "minnesota-timberwolves.png",
+                image: "new-jersey-devils.png",
                 color: "#FFD700",
                 key: "new-jersey-devils"
             },
@@ -171,7 +171,7 @@ export class NHLteams {
                 key: "seattle-kraken"
             },
             {
-                name: "St. Louis Blues",
+                name: "St Louis Blues",
                 abbreviation: "STL",
                 image: "st-louis-blues.png",
                 color: "#FFD700",

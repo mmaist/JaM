@@ -1,5 +1,6 @@
 import { Radio, Avatar,Dropdown, Loading, Table,Card,Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {Columns} from '../components/oddsColumns.js'
+import {MLBcolumns} from '../components/mlbColumns.js'
 import React from "react";
 
 export function GamesFun(games, error, isLoading, selected, league) {
@@ -9,6 +10,7 @@ export function GamesFun(games, error, isLoading, selected, league) {
     if (isLoading) return <Loading size = 'xl' />
 
     const tableColumns = Columns(selected)
+    const MLBtColumns = MLBcolumns(selected)
     const gamesArray1 = Object.values(games)
     const gamesArray2 = sortByCommenceTime(gamesArray1)
     const gamesArray = getGamesWithinSameDay(gamesArray2)
@@ -30,12 +32,12 @@ export function GamesFun(games, error, isLoading, selected, league) {
         }}
         >
             {console.log("hih" + selected,{selected})}
-        <Table.Header columns={tableColumns}>
+        <Table.Header columns={league === 'MLB' ? MLBtColumns : tableColumns}>
             {(column) => (
             <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
             )}
         </Table.Header>
-        <Table.Body items={gamesArray}>
+        <Table.Body items={league === 'MLB' ? gamesArray1 : gamesArray}>
         {(item) => (
         <Table.Row key={item.key}>
         {tableColumns.map((column) =>
