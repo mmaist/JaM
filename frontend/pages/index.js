@@ -47,7 +47,7 @@ export default function Home() {
     [formatValue]
   );
 
-  const [leagueValue, setleagueSelected] = React.useState(new Set(["NBA"]));
+  const [leagueValue, setleagueSelected] = React.useState(new Set(["MLB"]));
   const leagueselected = React.useMemo(
     () => Array.from(leagueValue).join(", ").replaceAll("_", " "),
     [leagueValue]

@@ -1,4 +1,4 @@
-import { Radio, Avatar, Loading, Card,Grid, Table, Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Radio, Avatar, Loading, Card,Grid,Image, Table, Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import moment from 'moment-timezone'
 import {MLBteams} from './MLBteams.js'
 import styles from '@/styles/Home.module.css'
@@ -8,39 +8,6 @@ const matchMLBRender = (item) => (
         <Text h4>{item.name}</Text>
         </Table.Cell>
         );
-
-const imageMLBRender = (item, keystring, {selected}, {league}) => {
-    const abbreviation = new MLBteams()
-    //const hometeam = "/"+league+"img/" + abbreviation.getImgByName(item['home_team'])
-    //const awayteam = "/"+league+"img/" + abbreviation.getImgByName(item['away_team'])
-
-    return(
-    <Table.Cell>
-        <Tooltip content={item['away_team']} 
-        rounded color="primary">
-    <Avatar
-            size="xl"
-            src={awayteam}
-            color="success"
-            bordered
-            zoomed
-        />
-        </Tooltip>
-        <div style={{ height: "20px" }} />
-        <Tooltip content={item['home_team']}
-        rounded 
-        color="primary">
-    <Avatar
-            size="xl"
-            src={hometeam}
-            color="success"
-            bordered
-            zoomed
-        />
-        </Tooltip>
-    </Table.Cell>
-    )
-};
 
 const futureRender = (item, keystring, {selected},league, futArray) => {
     const searchResult = futArray.gamesArray1[0].bookmakers.find((bookmaker) => bookmaker.key === keystring);
@@ -63,7 +30,7 @@ const futureRender = (item, keystring, {selected},league, futArray) => {
 
 };
 
-const bestOddsRender = (item, keystring, {selected},league, futArray) => {
+const bestOddsRender = (item, keystring, {selected},league, futArray, sort) => {
 
     let MLmax = 0;
     let MLmaxName = 'hi';
@@ -86,6 +53,9 @@ const bestOddsRender = (item, keystring, {selected},league, futArray) => {
     })
 
 
+    if (sort){
+        return(MLmax)
+    }
 
 
 
@@ -96,11 +66,26 @@ const bestOddsRender = (item, keystring, {selected},league, futArray) => {
         </Table.Cell>
     )
 
-
-
-
-
 }
+
+const imageMLBRender = (item, keystring, {selected}, {league}) => {
+    let abbreviation = new MLBteams();
+    const mlbteam = "/MLBimg/" + abbreviation.getImgByName(item.name)
+
+    return(
+    <Table.Cell>
+      
+    <Image
+            src={mlbteam}
+            alt = {item.name}
+            width = {70}
+            height = {70}
+        />
+      
+    </Table.Cell>
+    )
+};
+
 
 export const MLBcolumns = (selected)=> {
     return([
@@ -112,11 +97,12 @@ export const MLBcolumns = (selected)=> {
     {
         key:"images",
         label:"",
-        //render: imageMLBRender
+        render: imageMLBRender
     },
     {
         key: "bestOddsForGame",
         label: "Best Odds",
+        allowSorting: true,
         render: bestOddsRender
     },
    {
@@ -191,7 +177,7 @@ function h2hRender(h2hPrice) {
             isHoverable>
                 <Card.Body css = {{height: '73px', justifyContent: "center", overflow: "hidden",}}>
                     <Text 
-                        size={25}
+                        size={23}
                         css = {{textAlign:'center'}}>
                            <b> {h2hPrice}</b>
                     </Text>
@@ -208,7 +194,7 @@ function bestFutureRender(spreadNum, spreadPrice) {
         isHoverable>
         <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
           <Text
-            size={25}
+            size={23}
             css={{ textAlign: 'center', lineHeight: '1.3' }}>
                 <b>{spreadNum}</b>
           </Text>
