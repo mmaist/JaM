@@ -30,11 +30,12 @@ const futureRender = (item, keystring, {selected},league, futArray) => {
 
 };
 
-const bestOddsRender = (item, keystring, {selected},league, futArray, sort) => {
+const bestOddsRender = (item, keystring, {selected},league, futArray) => {
 
     let MLmax = 0;
     let MLmaxName = 'hi';
-    
+    //console.log("futArrayyyyy", futArray)
+
     futArray.gamesArray1[0].bookmakers.forEach((bookmaker) => {
         MLBcolumns(selected).forEach((column) => {
             if (column.key === bookmaker.key) {
@@ -52,10 +53,6 @@ const bestOddsRender = (item, keystring, {selected},league, futArray, sort) => {
         })
     })
 
-
-    if (sort){
-        return(MLmax)
-    }
 
 
 
@@ -89,16 +86,17 @@ const imageMLBRender = (item, keystring, {selected}, {league}) => {
 
 export const MLBcolumns = (selected)=> {
     return([
-    {
-        key: "team",
-        label: "Team",
-        render: matchMLBRender
-    },
-    {
+     {
         key:"images",
         label:"",
         render: imageMLBRender
     },
+    {
+        key: "team",
+        label: "To Win '23 World Series",
+        render: matchMLBRender
+    },
+   
     {
         key: "bestOddsForGame",
         label: "Best Odds",

@@ -47,7 +47,7 @@ export default function Home() {
     [formatValue]
   );
 
-  const [leagueValue, setleagueSelected] = React.useState(new Set(["MLB"]));
+  const [leagueValue, setleagueSelected] = React.useState(new Set(["NBA"]));
   const leagueselected = React.useMemo(
     () => Array.from(leagueValue).join(", ").replaceAll("_", " "),
     [leagueValue]
@@ -61,11 +61,11 @@ export default function Home() {
     <>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Head>
-          <title>ARBITRAGE v1.0</title>
+          <title>ARBITRAGE v1.2</title>
           <link rel="icon" href="/basketball.png" />
         </Head>
         <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 12 }}>
-          ARBITRAGE v1.1<img alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
+          ARBITRAGE v1.2<img alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
         </h1>
         <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '14px' }}>
           <Dropdown key="format">
@@ -102,7 +102,7 @@ export default function Home() {
             >
               <Dropdown.Item key="NBA">NBA</Dropdown.Item>
               <Dropdown.Item key="NHL">NHL</Dropdown.Item>
-              <Dropdown.Item key="MLB">MLB</Dropdown.Item>
+              <Dropdown.Item key="MLBws">Win '23 WS</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </div>
@@ -149,4 +149,16 @@ class ErrorBoundary extends React.Component {
     // Normally, just render children
     return this.props.children;
   }  
+}
+
+function getSelectedLabel(leagueValue) {
+  if (leagueValue == "NBA") {
+    return "NBA";
+  }
+  if (leagueValue == "NHL") {
+    return "NHL";
+  }
+  if (leagueValue == "MLBws") {
+    return "Win '23 WS";
+  }
 }

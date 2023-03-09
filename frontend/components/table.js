@@ -12,18 +12,17 @@ export function GamesFun(games, error, isLoading, selected, league) {
 
     const tableColumns = Columns(selected)
     const MLBtColumns = MLBcolumns(selected)
+   
     const gamesArray1 = Object.values(games)
     const gamesArray2 = sortByCommenceTime(gamesArray1)
     const gamesArray = getGamesWithinSameDay(gamesArray2)
-    
-    const mlbTeamnames = new MLBteams()
-    const mlbTeamMap = mlbTeamnames.getTeamNames()
-    const mlbArray = Object.values(mlbTeamMap)
-
+ 
+    const mlbArray2 =  addBestOdds("", gamesArray1,"")
+    const mlbArray = sortByBestOdds(mlbArray2)
     let pColumns = null
-    if (league ==='MLB') {
-        pColumns = MLBtColumns
 
+    if (league ==='MLBws') {
+        pColumns = MLBtColumns
     }else { pColumns = tableColumns
             }
 
@@ -43,12 +42,12 @@ export function GamesFun(games, error, isLoading, selected, league) {
             minWidth: "100%",    
         }}
         >
-        <Table.Header columns={league === 'MLB' ? MLBtColumns : tableColumns}>
+        <Table.Header columns={league === 'MLBws' ? MLBtColumns : tableColumns}>
             {(column) => (
             <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
             )}
         </Table.Header>
-        <Table.Body items={league === 'MLB' ? mlbArray : gamesArray}>
+        <Table.Body items={league === 'MLBws' ? mlbArray : gamesArray}>
         {(item,index) => (
         <Table.Row key={index}>
         {pColumns.map((column) =>
@@ -87,3 +86,58 @@ function sortByCommenceTime(events) {
       return 0;
     });
   }
+
+ 
+function sortByBestOdds(events) {
+    return events.sort((a, b) => {
+      if (a.price < b.price) {
+        return -1;
+      }
+      if (a.price > b.price) {
+        return 1;
+      }
+      return 0;
+    });
+  }
+
+function addBestOdds(mlbArray, futArray, events){
+    let mlbTeamnamessamp = new MLBteams()
+    let mlbTeamMapsamp = mlbTeamnamessamp.getTeamNames()
+    let resultsArray = [];
+    //console.log("futArray", futArray) 
+    
+    mlbTeamMapsamp.forEach((item) => {
+        let MLmax = 0;
+        let MLmaxName = null;
+        futArray[0].bookmakers.forEach((bookmaker) => {
+        MLBcolumns().forEach((column) => {
+            if (column.key === bookmaker.key) {
+                const futuremarket = bookmaker.markets.find((market) => market.key === 'outrights');
+
+                if (futuremarket){
+                    futuremarket.outcomes.forEach((outcome) => {
+                        if (outcome.name === item.name && (outcome.price > MLmax)) {
+                        MLmax = outcome.price;
+                        MLmaxName = outcome.name;
+                        }
+                    });
+                    }
+            }
+        })
+    })
+    
+    const result = {
+        price: MLmax,
+        name: MLmaxName,
+        key: MLmaxName
+      };
+      
+      
+      resultsArray.push(result);
+    
+});
+console.log(resultsArray)
+
+return (resultsArray)
+
+}

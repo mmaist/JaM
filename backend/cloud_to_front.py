@@ -63,7 +63,7 @@ def getNHLData():
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
-@app.route('/getMLBdata')
+@app.route('/getMLBwsdata')
 def getMLBData():
     
     father_dict = {}
