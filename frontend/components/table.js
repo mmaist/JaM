@@ -1,6 +1,7 @@
 import { Radio, Avatar,Dropdown, Loading, Table,Card,Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {Columns} from '../components/oddsColumns.js'
 import {MLBcolumns} from '../components/mlbColumns.js'
+import {MLBteams} from './MLBteams.js'
 import React from "react";
 
 export function GamesFun(games, error, isLoading, selected, league) {
@@ -14,6 +15,17 @@ export function GamesFun(games, error, isLoading, selected, league) {
     const gamesArray1 = Object.values(games)
     const gamesArray2 = sortByCommenceTime(gamesArray1)
     const gamesArray = getGamesWithinSameDay(gamesArray2)
+    
+    const mlbTeamnames = new MLBteams()
+    const mlbTeamMap = mlbTeamnames.getTeamNames()
+    const mlbArray = Object.values(mlbTeamMap)
+
+    let pColumns = null
+    if (league ==='MLB') {
+        pColumns = MLBtColumns
+
+    }else { pColumns = tableColumns
+            }
 
     //returns a completed table of all information regarding games and odds
     return (
@@ -31,17 +43,16 @@ export function GamesFun(games, error, isLoading, selected, league) {
             minWidth: "100%",    
         }}
         >
-            {console.log("hih" + selected,{selected})}
         <Table.Header columns={league === 'MLB' ? MLBtColumns : tableColumns}>
             {(column) => (
             <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
             )}
         </Table.Header>
-        <Table.Body items={league === 'MLB' ? gamesArray1 : gamesArray}>
-        {(item) => (
-        <Table.Row key={item.key}>
-        {tableColumns.map((column) =>
-            column.render ? column.render(item, column.key, {selected}, {league}) : (
+        <Table.Body items={league === 'MLB' ? mlbArray : gamesArray}>
+        {(item,index) => (
+        <Table.Row key={index}>
+        {pColumns.map((column) =>
+            column.render ? column.render(item, column.key, {selected}, {league},{gamesArray1}) : (
             <Table.Cell key={column.key} align = "center" >{item[column.key]}</Table.Cell>
             )
         )}

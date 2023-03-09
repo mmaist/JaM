@@ -152,11 +152,11 @@ const bestOddsRender = (item, keystring, {selected}) => {
 
   
     item.bookmakers.forEach((bookmaker) => { 
-        console.log('bookmaker:', bookmaker);
+        
      Columns(selected).forEach((column) => {
         if (column.key === bookmaker.key) {
             const h2hmarket = bookmaker.markets.find((hmarket) => hmarket.key === 'h2h');
-            console.log('h2hmarket:', h2hmarket);
+            
 
             if (h2hmarket){
             h2hmarket.outcomes.forEach((outcome) => {

@@ -69,7 +69,7 @@ export default function Home() {
         </h1>
         <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '14px' }}>
           <Dropdown key="format">
-            <Dropdown.Button solid color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '20px',marginRight: '14px', marginTop: '18px' }}>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '20px',marginRight: '14px', marginTop: '18px' }}>
               {formatselected}
             </Dropdown.Button>
             <Dropdown.Menu
@@ -88,7 +88,7 @@ export default function Home() {
           </Dropdown>
 
           <Dropdown key="league" style={{ marginLeft: '14px' }}>
-            <Dropdown.Button solid color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px', marginTop: '18px' }}>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px', marginTop: '18px' }}>
               {leagueValue}
             </Dropdown.Button>
             <Dropdown.Menu

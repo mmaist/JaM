@@ -171,7 +171,7 @@ export class MLBteams {
                 key: "seattle-mariners"
             },
             {
-                name: "St Louis Cardinals",
+                name: "St. Louis Cardinals",
                 abbreviation: "STL",
                 image: "st-louis-cardinals.png",
                 color: "#FFD700",
@@ -225,10 +225,13 @@ export class MLBteams {
         const teamname = this.teams.find((team) => team.name === name);
         return teamname && teamname.image ? teamname.image : 'null';
       }
-    
-    
 
+      getTeamNames() {
+        return this.teams.map((team, index) => ({
+          name: team.name,
+          key: index
+        }));
+      }
     
     
-
 }
