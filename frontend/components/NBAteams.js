@@ -1,4 +1,4 @@
-export class Teams {
+export class NBAteams {
     
     constructor() {
         this.teams = [
