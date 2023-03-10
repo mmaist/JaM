@@ -1,4 +1,4 @@
-import { Radio, Avatar, Loading, Card,Grid, Table, Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Radio, Avatar, Loading,Image,  Card,Grid, Table, Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import moment from 'moment-timezone'
 import {NBAteams} from './NBAteams.js'
 import {NHLteams} from './NHLteams.js'
@@ -30,28 +30,21 @@ const imageColumnRender = (item, keystring, {selected}, {league}) => {
 
     return(
     <Table.Cell>
-        <Tooltip content={item['away_team']} 
-        rounded color="primary">
-    <Avatar
-            size="xl"
+    
+    <Image
             src={awayteam}
-            color="success"
-            bordered
-            zoomed
+            alt = {item['away_team']}
+            width = {70}
+            height = {70}
         />
-        </Tooltip>
-        <div style={{ height: "20px" }} />
-        <Tooltip content={item['home_team']}
-        rounded 
-        color="primary">
-    <Avatar
-            size="xl"
+        <div style={{ height: "15px" }} />
+    <Image
             src={hometeam}
-            color="success"
-            bordered
-            zoomed
+            alt = {item['home_team']}
+            width = {70}
+            height = {70}
         />
-        </Tooltip>
+       
     </Table.Cell>
     )
 };
@@ -152,11 +145,11 @@ const bestOddsRender = (item, keystring, {selected}) => {
 
   
     item.bookmakers.forEach((bookmaker) => { 
-        console.log('bookmaker:', bookmaker);
+        
      Columns(selected).forEach((column) => {
         if (column.key === bookmaker.key) {
             const h2hmarket = bookmaker.markets.find((hmarket) => hmarket.key === 'h2h');
-            console.log('h2hmarket:', h2hmarket);
+            
 
             if (h2hmarket){
             h2hmarket.outcomes.forEach((outcome) => {

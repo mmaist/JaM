@@ -24,7 +24,7 @@ def getNBAData():
     gamecounter = 0
     db = firestore.Client(project='peppy-sensor-375905')
 
-    query = db.collection(u'NBA').order_by(u'commence_time', direction=firestore.Query.DESCENDING).limit(10).stream()
+    query = db.collection(u'NBA').order_by(u'commence_time', direction=firestore.Query.DESCENDING).limit(13).stream()
 
     for doc in query:
         gamecounter = gamecounter + 1
@@ -48,6 +48,29 @@ def getNHLData():
     db = firestore.Client(project='peppy-sensor-375905')
 
     query = db.collection(u'NHL').order_by(u'commence_time', direction=firestore.Query.DESCENDING).limit(16).stream()
+
+    for doc in query:
+        gamecounter = gamecounter + 1
+        father_dict['game'+ (str(gamecounter))] = doc.to_dict()
+    
+    json_return = json.dumps(father_dict)
+    return(json_return)
+    
+    
+    #testing below
+    #with open("test.txt", "w") as outfile:
+    #   outfile.write(json_return)
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
+@app.route('/getMLBwsdata')
+def getMLBData():
+    
+    father_dict = {}
+    gamecounter = 0
+    db = firestore.Client(project='peppy-sensor-375905')
+
+    query = db.collection(u'MLBf').order_by(u'commence_time', direction=firestore.Query.ASCENDING).limit(1).stream()
 
     for doc in query:
         gamecounter = gamecounter + 1
