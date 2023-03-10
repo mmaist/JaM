@@ -12,7 +12,7 @@ import {GamesFun} from '../components/table.js'
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
 function useDataFetcher(words, fetchered,league){
-const { data: games, error, isLoading } = useSWR('http://127.0.0.1:5000//get'+league+'data', fetchered)
+const { data: games, error, isLoading } = useSWR('https://jam-pcynlb5fzq-uc.a.run.app/get'+league+'data', fetchered)
   if (words === "games"){                        
     return games
   }
@@ -102,7 +102,7 @@ export default function Home() {
             >
               <Dropdown.Item key="NBA">NBA</Dropdown.Item>
               <Dropdown.Item key="NHL">NHL</Dropdown.Item>
-              <Dropdown.Item key="MLBws">Win '23 WS</Dropdown.Item>
+              <Dropdown.Item key="MLBws">Win &apos;23 WS</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </div>

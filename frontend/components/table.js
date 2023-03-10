@@ -104,7 +104,6 @@ function addBestOdds(mlbArray, futArray, events){
     let mlbTeamnamessamp = new MLBteams()
     let mlbTeamMapsamp = mlbTeamnamessamp.getTeamNames()
     let resultsArray = [];
-    //console.log("futArray", futArray) 
     
     mlbTeamMapsamp.forEach((item) => {
         let MLmax = 0;
@@ -136,7 +135,6 @@ function addBestOdds(mlbArray, futArray, events){
       resultsArray.push(result);
     
 });
-console.log(resultsArray)
 
 return (resultsArray)
 
