@@ -11,9 +11,9 @@ import {GamesFun} from '../components/table.js'
 //Gathers data from our API and puts it into an array that then calls the display functions
 const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
-function useDataFetcher(words, fetchered,league){
+function useDataFetcher(words, fetchered,league, word){
 const { data: games, error, isLoading } = useSWR('https://jam-pcynlb5fzq-uc.a.run.app/get'+league+'data', fetchered)
-  if (words === "games"){                        
+if (words === "games"){                        
     return games
   }
   if (words === "error"){
@@ -26,16 +26,20 @@ const { data: games, error, isLoading } = useSWR('https://jam-pcynlb5fzq-uc.a.ru
 
 }
 
-function timeDisplayer(timezone) {
-  const now = moment().tz(timezone); // Get the current time in the specified timezone
-  const today = now.format('YYYY-MM-DD');
-  const today845 = moment(`${today} 08:45:00`, 'YYYY-MM-DD HH:mm:ss').tz(timezone);
-  const yesterday = now.clone().subtract(1, 'day').format('YYYY-MM-DD');
-  const yesterday845 = moment(`${yesterday} 08:45:00`, 'YYYY-MM-DD HH:mm:ss').tz(timezone);
-  const targetTime = now.isAfter(today845) ? today845 : yesterday845;
-  const formattedTime = targetTime.format('dddd, MMMM D YYYY, h:mm A z');
-  return <div>{formattedTime}</div>;
+function useDKLiveFetcher(words, fetchered){
+  const { data: gamess, errorr, isLoadingg } = useSWR('https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/nba/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US', fetchered);
+  if (words === "games"){                        
+    return gamess;
+  }
+  if (words === "error"){
+    return errorr;
+  }
+  if (words === "isLoading"){
+    return isLoadingg;
+  }
+  return [gamess, errorr, isLoadingg];
 }
+
 
 ///First thing that runs that sets up that page and then calls various functions
 export default function Home() {
@@ -56,6 +60,10 @@ export default function Home() {
   const NBAgames = useDataFetcher("games",fetcher, leagueselected)
   const NBAerror = useDataFetcher("error",fetcher, leagueselected)
   const NBAisLoading = useDataFetcher("isLoading",fetcher, leagueselected)
+
+  const DKLive = useDKLiveFetcher("games",fetcher)
+  //console.log("DKLive" + DKLive)
+  //console.log("NBAgames" + NBAgames)
 
   return (
     <>

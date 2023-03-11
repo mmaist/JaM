@@ -4,6 +4,7 @@ import {NBAteams} from './NBAteams.js'
 import {NHLteams} from './NHLteams.js'
 import styles from '@/styles/Home.module.css'
 
+
 const matchColumnRender = (item) => (
     <Table.Cell >
       <div className={styles.title}>{item['away_team']}<br></br> @ {item['home_team']}</div>
@@ -16,6 +17,8 @@ const timeColumnRender = (item) => (
        <div className={styles.title}> {moment.utc(item['commence_time']).tz('America/Los_Angeles').format('MMM D, h:mm A')}</div>
     </Table.Cell>
 );
+
+
 
 //returns the avatars with logos for eaach team
 const imageColumnRender = (item, keystring, {selected}, {league}) => {
@@ -59,6 +62,7 @@ const bookColumnRender = (item, keystring, {selected},league) => {
     } else {
             abbreviation = new NBAteams();
     }
+    console.log("item", item)
 
     const searchResult = item.bookmakers.find((bookmaker) => bookmaker.key === keystring);
    
@@ -243,6 +247,10 @@ awaySPren = bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"");
     );
   };
   
+
+
+
+
    //constants for the column. Includes key, label and which renderer to use
 export const Columns = (selected)=> {
     return([
@@ -272,6 +280,12 @@ export const Columns = (selected)=> {
         label: "Draft Kings",
         abb: "DK",
         render: bookColumnRender
+    },
+    {
+        key: "draftkingslive",
+        label: "Draft Kings Live",
+        abb: "DKl",
+        //render: dkLiveRender
     },
     {
         key: "fanduel",
@@ -445,3 +459,4 @@ function bestTotRender(totNum, totPrice, totName, totName2) {
         </Card>
     );
 }
+

@@ -9,14 +9,12 @@ export function GamesFun(games, error, isLoading, selected, league) {
     
     if (error) return <div>Failed to load</div>
     if (isLoading) return <Loading size = 'xl' />
-
     const tableColumns = Columns(selected)
     const MLBtColumns = MLBcolumns(selected)
    
     const gamesArray1 = Object.values(games)
     const gamesArray2 = sortByCommenceTime(gamesArray1)
-    const gamesArray = getGamesWithinSameDay(gamesArray2)
- 
+    const gamesArray = getGamesWithinSameDay(gamesArray2) 
     const mlbArray2 =  addBestOdds("", gamesArray1,"")
     const mlbArray = sortByBestOdds(mlbArray2)
     let pColumns = null
