@@ -4,6 +4,7 @@ import { Inter } from '@next/font/google'
 import styles from '@/styles/Home.module.css'
 import useSWR from 'swr'
 import moment from 'moment-timezone'
+import {SSRProvider} from '@react-aria/ssr'
 import React, { useEffect } from 'react';
 import { Avatar, Loading,Dropdown, Table, Card, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {GamesFun} from '../components/table.js'
@@ -26,7 +27,7 @@ if (words === "games"){
 
 }
 
-function useDKLiveFetcher(words, fetchered){
+function useDKLiveFetcher(words, fetchered, league){
   const { data: gamess, errorr, isLoadingg } = useSWR('https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/nba/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US', fetchered);
   if (words === "games"){                        
     return gamess;
@@ -57,16 +58,32 @@ export default function Home() {
     [leagueValue]
   );
 
-  const NBAgames = useDataFetcher("games",fetcher, leagueselected)
-  const NBAerror = useDataFetcher("error",fetcher, leagueselected)
-  const NBAisLoading = useDataFetcher("isLoading",fetcher, leagueselected)
+  const [liveValue, setliveSelected] = React.useState(new Set(["DAILY"]));
+  const liveselected = React.useMemo(
+    () => Array.from(liveValue).join(", ").replaceAll("_", " "),
+    [liveValue]
+  );
 
-  const DKLive = useDKLiveFetcher("games",fetcher)
-  //console.log("DKLive" + DKLive)
-  //console.log("NBAgames" + NBAgames)
+
+
+  let games = null
+  let error = null
+  let isLoading = null
+
+  if (liveselected === "LIVE"){
+     games = useDKLiveFetcher("games",fetcher, leagueselected)
+      error = useDKLiveFetcher("error",fetcher, leagueselected)
+      isLoading = useDKLiveFetcher("isLoading",fetcher, leagueselected)
+  }
+  else{
+      games = useDataFetcher("games",fetcher, leagueselected)
+      error = useDataFetcher("error",fetcher, leagueselected)
+      isLoading = useDataFetcher("isLoading",fetcher, leagueselected)
+  }
 
   return (
-    <>
+    
+      <SSRProvider>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Head>
           <title>ARBITRAGE v1.2</title>
@@ -96,7 +113,7 @@ export default function Home() {
           </Dropdown>
 
           <Dropdown key="league" style={{ marginLeft: '14px' }}>
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px', marginTop: '18px' }}>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px',marginRight: '14px', marginTop: '18px' }}>
               {leagueValue}
             </Dropdown.Button>
             <Dropdown.Menu
@@ -113,13 +130,32 @@ export default function Home() {
               <Dropdown.Item key="MLBws">Win &apos;23 WS</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
+
+          <Dropdown key="liveOrnot" style={{ marginLeft: '14px' }}>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px', marginTop: '18px' }}>
+              {liveValue}
+            </Dropdown.Button>
+            <Dropdown.Menu
+              aria-label="Single selection actions"
+              color="success"
+              disallowEmptySelection
+              selectionMode="single"
+              selectedKey={liveValue}
+              onSelectionChange={setliveSelected}
+              css={{ backgroundColor: '#8ff2aa'}}
+            >
+              <Dropdown.Item key="LIVE">LIVE</Dropdown.Item>
+              <Dropdown.Item key="DAILY">DAILY</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
         </div>
       </div>
       <div style={{ margin: '0px 0' }}></div>
-      <ErrorBoundary key={formatselected + leagueselected}>
-        {GamesFun(NBAgames, NBAerror, NBAisLoading,formatselected, leagueselected)}
+      <ErrorBoundary key={formatselected + leagueselected + liveselected}>
+        {GamesFun(games, error, isLoading,formatselected, leagueselected, liveselected)}
       </ErrorBoundary>
-    </>
+      </SSRProvider>
+    
   );
   
 
@@ -157,16 +193,4 @@ class ErrorBoundary extends React.Component {
     // Normally, just render children
     return this.props.children;
   }  
-}
-
-function getSelectedLabel(leagueValue) {
-  if (leagueValue == "NBA") {
-    return "NBA";
-  }
-  if (leagueValue == "NHL") {
-    return "NHL";
-  }
-  if (leagueValue == "MLBws") {
-    return "Win '23 WS";
-  }
 }

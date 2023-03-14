@@ -6,11 +6,13 @@ import styles from '@/styles/Home.module.css'
 
 
 const matchColumnRender = (item) => {
-    console.log("ODDSitem" + item)
-   return( <Table.Cell >
-      <div className={styles.title}>{item['away_team']}<br></br> @ {item['home_team']}</div>
-    </Table.Cell>
-)};
+    return(
+        <Table.Cell >
+      <div className={styles.title}>{item.event.awayName}<br></br> @ {item.event.homeName}</div>
+        </Table.Cell>
+    )
+};
+
 
   //returns matchup time
 const timeColumnRender = (item) => (
@@ -18,7 +20,16 @@ const timeColumnRender = (item) => (
        <div className={styles.title}> {moment.utc(item['commence_time']).tz('America/Los_Angeles').format('MMM D, h:mm A')}</div>
     </Table.Cell>
 );
-
+const scoreRender = (item) => {
+    if (item.event.state === "STARTED"){
+    return(
+        <Table.Cell key = {item.liveData.score.away + item.liveData.score.home}>
+      <div className={styles.title}>{item.liveData.score.away}<br></br>{item.liveData.score.home}</div>
+        </Table.Cell>
+    )
+    }
+    return (<Table.Cell></Table.Cell>)
+    };
 
 
 //returns the avatars with logos for eaach team
@@ -63,8 +74,12 @@ const bookColumnRender = (item, keystring, {selected},league) => {
     } else {
             abbreviation = new NBAteams();
     }
-
-    const searchResult = item.bookmakers.find((bookmaker) => bookmaker.key === keystring);
+    const searchResult = item.betOffers.find((offer) => offer.betOfferType.name === "Handicap");
+    if (searchResult)
+    {
+        return(
+        <Table.Cell>{searchResult.eventId}</Table.Cell>)
+    }
    
     let retMes = null;
 
@@ -81,7 +96,7 @@ const bookColumnRender = (item, keystring, {selected},league) => {
         const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
         const totalsmarket = searchResult.markets.find((tmarket) => tmarket.key === 'totals');
         
-    if (selected=="moneyline" && h2hmarket) {
+    if (selected=="moneyline") {
         const sortOutcomes1 = sortOutcomesByTeamName(h2hmarket.outcomes,item);
         retMes = sortOutcomes1.map((outcome) => (
             h2hRender(plusAdder(outcome.price))
@@ -252,7 +267,7 @@ awaySPren = bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"");
 
 
    //constants for the column. Includes key, label and which renderer to use
-export const Columns = (selected)=> {
+export const liveColumns = (selected)=> {
     return([
     {
         key: "away_team",
@@ -260,82 +275,39 @@ export const Columns = (selected)=> {
         render: matchColumnRender
     },
     {
+        key: "scores",
+        label: "Score",
+        render: scoreRender
+    },
+    {
         key: "commence_time",
         label: "Time",
-        render: timeColumnRender
+       // render: timeColumnRender
     },
     {
         key:"images",
         label:"",
-        render: imageColumnRender
+       // render: imageColumnRender
     },
     {
         key: "bestOddsForGame",
         label: "Best Odds",
-        selected: {selected},
-        render: bestOddsRender
+        //selected: {selected},
+        //render: bestOddsRender
     },
     {
-        key: "draftkings",
-        label: "Draft Kings",
-        abb: "DK",
-        render: bookColumnRender
-    },
-    {
-        key: "fanduel",
-        label: "Fan Duel",
-        abb: "FD",
-        render: bookColumnRender
-    },
-    {
-        key: "barstool",
-        label: "Barstool",
+        key: "barstoolLive",
+        label: "Barstool Live",
         abb: "BS",
         render: bookColumnRender
     },
     {
-        label: "William Hill (US)",
-        key: "williamhill_us",
-        abb: "WH",
-        render: bookColumnRender
-
+        key: "draftkingslive",
+        label: "Draft Kings Live",
+        abb: "DKl",
+        //render: dkLiveRender
     },
-    {
-        key: "betmgm",
-        label: "BetMGM",
-        abb: "bMGM",
-        render: bookColumnRender
-    },
-    {
-        key: "superbook",
-        label: "SuperBook",
-        abb: "SB",
-        render: bookColumnRender
-    },
-    {
-        key: "betus",
-        label: "BetUS",
-        abb: "bUS",
-        render: bookColumnRender
-    },
-    {
-        key: "pointsbetus",
-        label: "PointsBet (US)",
-        abb: "PB",
-        render: bookColumnRender
-    },
-    {
-        key: "mybookieag",
-        label: "MyBookie.ag",
-        abb: "MB.ag",
-        render: bookColumnRender
-    },
-    {
-        key: "unibet_us",
-        label: "Unibet",
-        abb: "Uni",
-        render: bookColumnRender
-    }
+    
 
 ]);}
 

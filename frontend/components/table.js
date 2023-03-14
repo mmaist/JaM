@@ -1,64 +1,104 @@
 import { Radio, Avatar,Dropdown, Loading, Table,Card,Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {Columns} from '../components/oddsColumns.js'
 import {MLBcolumns} from '../components/mlbColumns.js'
+import {liveColumns} from '../components/liveColumns.js'
 import {MLBteams} from './MLBteams.js'
 import React from "react";
+import { SSRProvider } from "@react-aria/ssr";
+import { v4 as uuidv4 } from "uuid";
 
-export function GamesFun(games, error, isLoading, selected, league) {
-    
-    
+
+export function GamesFun(games, error, isLoading, selected, league, liveJSON) {
     if (error) return <div>Failed to load</div>
-    if (isLoading) return <Loading size = 'xl' />
+    if (isLoading || !games) return <Loading size = 'xl' />
+    if (liveJSON === 'LIVE') {
+      console.log(games.events)
+    }
+
+    let gamesArray = null;
+    let newLiveArray = null;
+    let gamesArray2 = null;
+    let gamesArray1 = null;
+    
     const tableColumns = Columns(selected)
     const MLBtColumns = MLBcolumns(selected)
-   
-    const gamesArray1 = Object.values(games)
-    const gamesArray2 = sortByCommenceTime(gamesArray1)
-    const gamesArray = getGamesWithinSameDay(gamesArray2) 
-    const mlbArray2 =  addBestOdds("", gamesArray1,"")
-    const mlbArray = sortByBestOdds(mlbArray2)
-    let pColumns = null
+    const liveorNotColumns = liveColumns(selected)
+   if (games){
+    gamesArray1 = Object.values(games)
+    gamesArray2 = sortByCommenceTime(gamesArray1)
+    gamesArray = getGamesWithinSameDay(gamesArray2) 
+    console.log("games" + gamesArray)
+    if (liveJSON === 'LIVE') {
+      const liveOrNotArray = Object.values(games);
+      const [firstObject] = liveOrNotArray;
+       newLiveArray = [firstObject];
+    //console.log("idTest" + newLiveArray[0,0].event.id)
 
-    if (league ==='MLBws') {
+    console.log("NWA" + newLiveArray)
+    }
+   }
+    // Use map() to add a unique id to eah object in newLiveArray
+    
+   
+    
+    
+
+
+    let mlbArray = null;
+    if (league ==='MLBws' && liveJSON === 'DAILY') {
+    const mlbArray2 =  addBestOdds("", gamesArray1,"")
+    mlbArray = sortByBestOdds(mlbArray2)
+    }
+
+    //console.log("oldLiveArray" + oldLiveArray);
+    //console.log("newLiveArray" + newLiveArray)
+   // console.log("gamesArray" + gamesArray)
+
+    
+    let pColumns = tableColumns
+
+    if (liveJSON === 'LIVE') {
+        pColumns = liveorNotColumns
+    }else
+    if (league ==='MLBws' && liveJSON) {
         pColumns = MLBtColumns
-    }else { pColumns = tableColumns
-            }
+    }
 
     //returns a completed table of all information regarding games and odds
     return (
-    <div>
-        
-        <div style={{ margin: '10px 0' }}></div>
-           
-        <Table
-        lined
-        shadow={false}
-        sticked
-        aria-label="Example table with dynamic content"
-        css={{
-            height: "auto",
-            minWidth: "100%",    
-        }}
-        >
-        <Table.Header columns={league === 'MLBws' ? MLBtColumns : tableColumns}>
-            {(column) => (
-            <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
-            )}
-        </Table.Header>
-        <Table.Body items={league === 'MLBws' ? mlbArray : gamesArray}>
-        {(item,index) => (
-        <Table.Row key={index}>
-        {pColumns.map((column) =>
-            column.render ? column.render(item, column.key, {selected}, {league},{gamesArray1}) : (
-            <Table.Cell key={column.key} align = "center" >{item[column.key]}</Table.Cell>
-            )
-        )}
-        </Table.Row>
-    )}
-        </Table.Body>
-        </Table>
-    
-    </div>
+    <SSRProvider>
+      <div> 
+          <div style={{ margin: '10px 0' }}></div>  
+          <Table
+          lined
+          shadow={false}
+          sticked
+          aria-label="Example table with dynamic content"
+          css={{
+              height: "auto",
+              minWidth: "100%",    
+          }}
+          >
+          <Table.Header columns={league === 'MLBws' ? (liveJSON === 'LIVE' ? liveorNotColumns : MLBtColumns) : (liveJSON === 'LIVE' ? liveorNotColumns : tableColumns)} >
+              {(column) => (
+              <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
+              )}
+          </Table.Header>
+          <Table.Body items={league === 'MLBws' ? (liveJSON === 'LIVE' ? newLiveArray[0] : mlbArray) : (liveJSON === 'LIVE' ? newLiveArray[0] : gamesArray)} >
+          {(item,index) => (
+          <Table.Row key={uuidv4()}>
+          {pColumns.map((column, index) =>
+              column.render ? column.render(item, column.key, {selected}, {league},{gamesArray1}) : (
+              <Table.Cell key={column.key} align = "center" >{column.key}</Table.Cell>
+              )
+          )}
+          </Table.Row>
+      )}
+          </Table.Body>
+          </Table>
+      
+      </div>
+    </SSRProvider>
     );
 }
 
