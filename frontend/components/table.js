@@ -11,9 +11,6 @@ import { v4 as uuidv4 } from "uuid";
 export function GamesFun(games, error, isLoading, selected, league, liveJSON) {
     if (error) return <div>Failed to load</div>
     if (isLoading || !games) return <Loading size = 'xl' />
-    if (liveJSON === 'LIVE') {
-      console.log(games.events)
-    }
 
     let gamesArray = null;
     let newLiveArray = null;
@@ -27,14 +24,10 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON) {
     gamesArray1 = Object.values(games)
     gamesArray2 = sortByCommenceTime(gamesArray1)
     gamesArray = getGamesWithinSameDay(gamesArray2) 
-    console.log("games" + gamesArray)
     if (liveJSON === 'LIVE') {
       const liveOrNotArray = Object.values(games);
       const [firstObject] = liveOrNotArray;
        newLiveArray = [firstObject];
-    //console.log("idTest" + newLiveArray[0,0].event.id)
-
-    console.log("NWA" + newLiveArray)
     }
    }
     // Use map() to add a unique id to eah object in newLiveArray
@@ -49,18 +42,13 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON) {
     const mlbArray2 =  addBestOdds("", gamesArray1,"")
     mlbArray = sortByBestOdds(mlbArray2)
     }
-
-    //console.log("oldLiveArray" + oldLiveArray);
-    //console.log("newLiveArray" + newLiveArray)
-   // console.log("gamesArray" + gamesArray)
-
     
     let pColumns = tableColumns
 
     if (liveJSON === 'LIVE') {
         pColumns = liveorNotColumns
     }else
-    if (league ==='MLBws' && liveJSON) {
+    if (league ==='MLBws' && liveJSON === 'DAILY') {
         pColumns = MLBtColumns
     }
 
@@ -73,7 +61,7 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON) {
           lined
           shadow={false}
           sticked
-          aria-label="Example table with dynamic content"
+          aria-label="MAIN TABLE"
           css={{
               height: "auto",
               minWidth: "100%",    
@@ -87,11 +75,11 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON) {
           <Table.Body items={league === 'MLBws' ? (liveJSON === 'LIVE' ? newLiveArray[0] : mlbArray) : (liveJSON === 'LIVE' ? newLiveArray[0] : gamesArray)} >
           {(item,index) => (
           <Table.Row key={uuidv4()}>
-          {pColumns.map((column, index) =>
+          {pColumns.map((column, index) =>(
               column.render ? column.render(item, column.key, {selected}, {league},{gamesArray1}) : (
-              <Table.Cell key={column.key} align = "center" >{column.key}</Table.Cell>
-              )
-          )}
+              <Table.Cell key={index+column.key} align = "center" >{column.key}</Table.Cell>)
+              
+              ))}
           </Table.Row>
       )}
           </Table.Body>

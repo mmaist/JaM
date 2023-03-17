@@ -6,25 +6,45 @@ import styles from '@/styles/Home.module.css'
 
 
 const matchColumnRender = (item) => {
+ 
     return(
-        <Table.Cell >
-      <div className={styles.title}>{item.event.awayName}<br></br> @ {item.event.homeName}</div>
+        <Table.Cell css={{textAlign: 'center'}}   >
+           <Text>{timeColumnRender(item)}</Text>
+            <div style={{ height: "15" }} />
+            <Text css = {{fontFamily: "futura", marginLeft: "22px"}}>{item.event.awayName}<br></br> @ {item.event.homeName}</Text>
         </Table.Cell>
     )
 };
 
 
   //returns matchup time
-const timeColumnRender = (item) => (
-    <Table.Cell>
-       <div className={styles.title}> {moment.utc(item['commence_time']).tz('America/Los_Angeles').format('MMM D, h:mm A')}</div>
-    </Table.Cell>
-);
+function timeColumnRender(item){
+if (item.event.state === "NOT_STARTED"){
+    return(
+       <> {moment.utc(item.event.start).tz('America/Los_Angeles').format('MMM D, h:mm A')}</>
+    )
+    }else{
+    let minutes = item.liveData.matchClock.minutesLeftInPeriod;
+    let seconds = item.liveData.matchClock.secondsLeftInMinute;
+    if (seconds < 10){
+        seconds = "0" + seconds;
+    }
+ const shape = (<svg width = "17" height = "18">
+    <g fill="none" fill-rule= "evenodd">
+    <circle cx="8" cy="9" r="4" fill = "#CC0202" />
+    <circle cx="8" cy="9" r="7.5" stroke = "#E95353" />
+  </g></svg>)
+    return (<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{shape} <Text size = {15} css = {{marginLeft: "5px"}}>{"  " + periodConverter(item.liveData.matchClock.period)} · {item.liveData.matchClock.minutesLeftInPeriod}:{seconds}</Text></div>)
+}
+};
+
 const scoreRender = (item) => {
     if (item.event.state === "STARTED"){
     return(
-        <Table.Cell key = {item.liveData.score.away + item.liveData.score.home}>
-      <div className={styles.title}>{item.liveData.score.away}<br></br>{item.liveData.score.home}</div>
+        <Table.Cell >
+            {scoreCardRender(item.liveData.score.away)}
+            <div style={{ height: "15px" }} />
+            {scoreCardRender(item.liveData.score.home)}
         </Table.Cell>
     )
     }
@@ -40,12 +60,11 @@ const imageColumnRender = (item, keystring, {selected}, {league}) => {
         } else {
             abbreviation = new NBAteams();
         }
-    const hometeam = "/"+league+"img/" + abbreviation.getImgByName(item['home_team'])
-    const awayteam = "/"+league+"img/" + abbreviation.getImgByName(item['away_team'])
-
+    const hometeam = "/"+league+"img/" + abbreviation.getImgByCombinedName(item.event.homeName)
+    const awayteam = "/"+league+"img/" + abbreviation.getImgByCombinedName(item.event.awayName)
     return(
-    <Table.Cell>
-    
+    <Table.Cell css = {{Align: 'center'}} key = {hometeam + awayteam}>
+    <div css={{ margin: '0 auto' }}>
     <Image
             src={awayteam}
             alt = {item['away_team']}
@@ -59,14 +78,14 @@ const imageColumnRender = (item, keystring, {selected}, {league}) => {
             width = {70}
             height = {70}
         />
-       
+       </div>
     </Table.Cell>
     )
 };
 
 
 //Render for DraftKings. Gathers all the information from 'item' and returns it in a displayable format
-const bookColumnRender = (item, keystring, {selected},league) => {
+const MLColumnRender = (item, keystring, {selected},league) => {
     //Finds the specific book for each game, if the isn't found it returns N/A
     let abbreviation;
     if (league === "NHL") {
@@ -74,196 +93,124 @@ const bookColumnRender = (item, keystring, {selected},league) => {
     } else {
             abbreviation = new NBAteams();
     }
-    const searchResult = item.betOffers.find((offer) => offer.betOfferType.name === "Handicap");
-    if (searchResult)
-    {
-        return(
-        <Table.Cell>{searchResult.eventId}</Table.Cell>)
-    }
-   
+    const h2hResult = item.betOffers.find((offer) => offer.betOfferType.name === "Match");
     let retMes = null;
-
-    if (!searchResult) {
-        return (
-            <Table.Cell>
-            {h2hRender('-')}
-            {h2hRender('-')}
-            </Table.Cell>
-            )
-    }
-    if (searchResult){
-        const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
-        const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
-        const totalsmarket = searchResult.markets.find((tmarket) => tmarket.key === 'totals');
-        
-    if (selected=="moneyline") {
-        const sortOutcomes1 = sortOutcomesByTeamName(h2hmarket.outcomes,item);
-        retMes = sortOutcomes1.map((outcome) => (
-            h2hRender(plusAdder(outcome.price))
+      
+    if (h2hResult) {
+        const sortOutcomes1 = sortOutcomesByTeamName(h2hResult.outcomes,item);
+        const outcomes1 = sortOutcomes1.map((outcome) => (
+            h2hRender(plusAdder(outcome.oddsAmerican))
         ))
-    }
+        if (outcomes1.length > 1) {
+            outcomes1.splice(1, 0, <div style={{ height: "15px" }} />);
+          }
+          retMes = retMes ? [...retMes, ...outcomes1] : outcomes1;
 
-    if (selected=="spread" && spreadmarket) {
-        const sortOutcomes2 = sortOutcomesByTeamName(spreadmarket.outcomes,item);
-        const outcomes1 = sortOutcomes2.map((outcome) => (
-        spreadRender(plusAdder(outcome.point),plusAdder(outcome.price))
-        ));
-        retMes = retMes ? [...retMes, ...outcomes1] : outcomes1;
-    }
-
-    if (selected=="total" && totalsmarket) {
-        const outcomes2 = totalsmarket.outcomes.map((outcome) => (
-        totRender(outcome.point,plusAdder(outcome.price), outcome.name )
-        ))
-        retMes = retMes ? [...retMes, ...outcomes2] : outcomes2;
     }
 
     if (!retMes) {
         return (
         <Table.Cell>
         {h2hRender('-')}
+        <div style={{ height: "15px" }} />
         {h2hRender('-')}
         </Table.Cell>
         )
     }
 
     return (
-        <Table.Cell>
+        <Table.Cell css = {{textAlign: 'center'}}>
         {retMes}
         </Table.Cell>
     );
-    }
+    };
 
+
+
+const SPColumnRender = (item, keystring, {selected},league) => {
+
+   //Finds the specific book for each game, if the isn't found it returns N/A
+   let abbreviation;
+   if (league === "NHL") {
+           abbreviation = new NHLteams();
+   } else {
+           abbreviation = new NBAteams();
+   }
+   const spreadResult = item.betOffers.find((offer) => offer.betOfferType.name === "Handicap");
+
+  
+   let retMes = null;
+
+
+   if (spreadResult) {
+       const sortOutcomes2 = sortOutcomesByTeamName(spreadResult.outcomes,item);
+       const outcomes1 = sortOutcomes2.map((outcome) => (
+       spreadRender(plusAdder(lineConverter(outcome.line)),plusAdder(outcome.oddsAmerican))
+       ));
+       if (outcomes1.length > 1) {
+        outcomes1.splice(1, 0, <div style={{ height: "15px" }} />);
+      }
+       retMes = retMes ? [...retMes, ...outcomes1] : outcomes1;
+   }
+
+   if (!retMes) {
+       return (
+       <Table.Cell css = {{textAlign: 'center'}}>
+       {h2hRender('-')}
+       <div style={{ height: "15px" }} />
+       {h2hRender('-')}
+       </Table.Cell>
+       )
+   }
+
+   return (
+       <Table.Cell css = {{textAlign: 'center'}}>
+       {retMes}
+       </Table.Cell>
+   );
 };
 
 
-const bestOddsRender = (item, keystring, {selected}) => {
-    let MLmax = -100000000;
-    let MLmaxName = null;
-    let foundPositivePrice = false;
-    let MLmin = -100000000;
-    let MLminName = null;
-    let MLTeam = null;
-
-    let SPmax = 0;
-    let SPmaxName = null;
-    let foundPositiveSpread = false;
-    let SPmin = -100000000;
-    let SPminName = null;
-    let SPmaxPrice = -10000000;
-    let SPminPrice = -1000000;
-    let spreadTeam = null;
-
-    let TOmax = 100000000;
-    let TOmaxName = null;
-    let foundPositiveTotal = false;
-    let TOmin = 0.0;
-    let TOminName = null; 
-    let TOmaxPrice = -10000000;
-    let TOminPrice = -1000000;
-
-  
-    item.bookmakers.forEach((bookmaker) => { 
-        
-     Columns(selected).forEach((column) => {
-        if (column.key === bookmaker.key) {
-            const h2hmarket = bookmaker.markets.find((hmarket) => hmarket.key === 'h2h');
-            
-
-            if (h2hmarket){
-            h2hmarket.outcomes.forEach((outcome) => {
-                if (outcome.name === item['away_team'] && (outcome.price > MLmax)) {
-                MLmax = outcome.price;
-                MLmaxName = column.abb;
-                }
-                if (outcome.name === item['home_team'] && (outcome.price > MLmin )){
-                MLmin = outcome.price;
-                MLminName = column.abb;
-                }
-            });
-            }
-            const spreadmarket = bookmaker.markets.find((smarket) => smarket.key === 'spreads');
-            if (spreadmarket){
-            spreadmarket.outcomes.forEach((outcome) => {
-                if (outcome.name === item['away_team'] && (outcome.point > SPmax || !foundPositiveSpread || (outcome.point === SPmax && outcome.price > SPmaxPrice))) {
-                SPmaxPrice = outcome.price;
-                SPmax = outcome.point;
-                SPmaxName = column.abb;
-                foundPositiveSpread = true;
-                MLTeam = outcome.name;
-                }
-                if (outcome.name === item['home_team']&& (outcome.point > SPmin || (outcome.point === SPmin && outcome.price > SPminPrice) )){
-                SPminPrice = outcome.price;  
-                SPmin = outcome.point;
-                SPminName = column.abb;
-                }
-            });
-            }
-            const totalsmarket = bookmaker.markets.find((tmarket) => tmarket.key === 'totals');
-            if (totalsmarket){
-            totalsmarket.outcomes.forEach((outcome) => {
-                if ((outcome.name ==='Over') && ((outcome.point < TOmax)|| (outcome.price > TOmaxPrice && outcome.point === TOmax))){
-                TOmax = outcome.point;
-                TOmaxName = column.abb;
-                TOmaxPrice = outcome.price;
-                spreadTeam = outcome.name;
-                }
-                if ((outcome.name ==='Under') && ((outcome.point > TOmin) || (outcome.price > TOminPrice && outcome.point === TOmin))){
-                TOmin = outcome.point;
-                TOminName = column.abb;
-                TOminPrice = outcome.price;
-                }
-
-            })
-        }
-    }}
-)});
-let homeMLren = null;
-let awayMLren = null;
-awayMLren = spreadRender(plusAdder(MLmax),MLmaxName);
-homeMLren = spreadRender(plusAdder(MLmin),MLminName);
 
 
-let homeSPren = null;
-let awaySPren = null;
-homeSPren = bestTotRender(plusAdder(SPmin),SPminPrice,SPminName,"")
-awaySPren = bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"");
+const OUColumnRender = (item, keystring, {selected},league, live, timeInterval) => {
 
+   //Finds the specific book for each game, if the isn't found it returns N/A
+   let abbreviation;
+   if (league === "NHL" && timeInterval) {
+           abbreviation = new NHLteams();
+   } else {
+           abbreviation = new NBAteams();
+   }
+   const totalResult = item.betOffers.find((offer) => offer.betOfferType.name === "Over/Under");
+   let retMes = null;
 
-    if (selected == "moneyline"){
-        return(
-            <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
-                {awayMLren}
-                {homeMLren}
-            </Table.Cell>
-        )
-    }
-    if (selected == "total"){
-        return(
-            <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
-                {bestTotRender(TOmax,TOmaxPrice,TOmaxName,"Over")}
-                {bestTotRender(TOmin,TOminPrice,TOminName,"Under")}
-            </Table.Cell>
-        )
-        }
-    if (selected == "spread"){
-        return(
-            <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
-                {awaySPren}
-                {homeSPren}
-            </Table.Cell>
-        )
-    }
-  
-    return (
-      <Table.Cell>
-        Best Odds N/A
-      </Table.Cell>
-    );
-  };
-  
+   if (totalResult) {
+       const outcomes2 = totalResult.outcomes.map((outcome) => (
+       totRender(lineConverter(outcome.line),plusAdder(outcome.oddsAmerican), outcome.label )
+       ))
+       if (outcomes2.length > 1) {
+        outcomes2.splice(1, 0, <div style={{ height: "15px" }} />);
+      }
+       retMes = retMes ? [...retMes, ...outcomes2] : outcomes2;
+   }
 
+   if (!retMes) {
+       return (
+       <Table.Cell css = {{Align: 'center'}}>
+       {h2hRender('-')}
+       <div style={{ height: "15px" }} />
+       {h2hRender('-')}
+       </Table.Cell>
+       )
+   }
 
+   return (
+       <Table.Cell css = {{Align: 'center'}}>
+       {retMes}
+       </Table.Cell>
+   );
+};
 
 
    //constants for the column. Includes key, label and which renderer to use
@@ -271,65 +218,96 @@ export const liveColumns = (selected)=> {
     return([
     {
         key: "away_team",
-        label: "Matchup",
+        label: "Barstool Sportsbook Live Odds",
+        align: 'center',
         render: matchColumnRender
-    },
-    {
-        key: "scores",
-        label: "Score",
-        render: scoreRender
-    },
-    {
-        key: "commence_time",
-        label: "Time",
-       // render: timeColumnRender
     },
     {
         key:"images",
         label:"",
-       // render: imageColumnRender
+        align: 'center',
+        render: imageColumnRender,
     },
     {
-        key: "bestOddsForGame",
-        label: "Best Odds",
-        //selected: {selected},
-        //render: bestOddsRender
+        key: "scores",
+        label: "Current Score",
+        align: 'center',
+        render: scoreRender
     },
     {
-        key: "barstoolLive",
-        label: "Barstool Live",
-        abb: "BS",
-        render: bookColumnRender
+        key: "barstoolML",
+        label: "ML",
+        abb: "BSMl",
+        render: MLColumnRender
     },
     {
-        key: "draftkingslive",
-        label: "Draft Kings Live",
-        abb: "DKl",
-        //render: dkLiveRender
+        key: "barstoolSpread",
+        label: "Spread",
+        abb: "BSSp",
+        render: SPColumnRender
+    },
+    {
+        key: "barstoolO/U",
+        label: "O/U",
+        abb: "BSOu",
+        render: OUColumnRender
     },
     
 
 ]);}
 
 function plusAdder(num){
-    if (num > 0){
-        return "+" + num
+    if (parseInt(num) > 0){
+        return "+" + num;
+    } else {
+        return parseInt(num);
     }
-    else return (num)
 }
 
 function sortOutcomesByTeamName(outcomes, items) {
     return outcomes.slice().sort((a, b) => {
-      if (a.name === items['home_team']) return 1;
-      if (b.name === items['home_team']) return -1;
+      if (a.participant === items.event.homeName) return 1;
+      if (b.participant === items.event.homeName) return -1;
       return 0;
     });
   }
 
+function lineConverter(line) {
+    return Math.round(line / 1000 * 10) / 10;
+  }
+
+function periodConverter(period) {
+    if (period === "1st period"){
+        return "1ST PRD"
+    }
+    if (period === "2nd period"){
+        return "2ND PRD"
+    }
+    if (period === "3rd period"){
+        return "3RD PRD"
+    }
+    if (period === "1st overtime"){
+        return "1OT"
+    }
+    if (period === "1st Quarter"){
+        return "1ST QTR"
+    }
+    if (period === "2nd Quarter"){
+        return "2ND QTR"
+    }
+    if (period === "3rd Quarter"){
+        return "3RD QTR"
+    }
+    if (period === "4th Quarter"){
+        return "4TH QTR"
+    }
+
+    return period;
+}
 function spreadRender(spreadNum, spreadPrice) {
     return (
       <Card variant="bordered"
-        css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
+        css={{ width: "100px", height: "73px", margin: 'auto' }}
         isHoverable>
         <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
           <Text
@@ -339,7 +317,6 @@ function spreadRender(spreadNum, spreadPrice) {
           </Text>
           <Text
             size={14}
-            textAlign="center"
             css={{ textAlign: 'center', lineHeight: '1.5' }}>
                 {spreadPrice}
           </Text>
@@ -352,7 +329,7 @@ function h2hRender(h2hPrice) {
 
     return (
             <Card variant="bordered"
-            css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
+            css={{ width: "100px", height: "73px", margin: 'auto' }}
             isHoverable>
                 <Card.Body css = {{height: '73px', justifyContent: "center", overflow: "hidden",}}>
                     <Text 
@@ -365,6 +342,26 @@ function h2hRender(h2hPrice) {
       );
 
 }
+
+function scoreCardRender(score) {
+
+    return (
+        <Card variant="flat"
+        css={{ width: "75px", height: "73px", marginBottom: '10px', margin: 'auto' }}
+        >
+            <Card.Body css = {{height: '73px', justifyContent: "center", overflow: "hidden", backgroundColor: "#696969"}}>
+                <Text 
+                    size={25}
+                    css = {{textAlign:'center', color: 'white'}}>
+                       <b> {score}</b>
+                </Text>
+            </Card.Body>
+        </Card>
+  );
+
+
+}
+
 function totRender(totNum, totPrice, totName) {
     let ou = "o"
     if (totName === "Under"){
@@ -373,7 +370,7 @@ function totRender(totNum, totPrice, totName) {
 
     return (
         <Card variant="bordered"
-        css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
+        css={{ width: "100px", height: "73px", margin: 'auto' }}
         isHoverable>
             <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
                 <Text
@@ -391,38 +388,4 @@ function totRender(totNum, totPrice, totName) {
     );
 }
 
-function bestTotRender(totNum, totPrice, totName, totName2) {
-    let ou = ""
-    if (totName2 === "Under"){
-        ou = "u"
-    }
-    if (totName2 === "Over"){
-        ou = "o"
-    }
-
-    return (
-        <Card variant="bordered"
-        css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
-        isHoverable>
-            <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
-                <Text
-                size={21}
-                css={{ textAlign: 'center', lineHeight: '1.3' }}>
-                    <b>{ou}{totNum}</b>
-                </Text>
-                <Text
-                size={17}
-                css={{ textAlign: 'center', lineHeight: '1.2' }}>
-                    {totPrice}
-                </Text>
-                <Text
-                size={13}
-                textAlign="center"
-                css={{ textAlign: 'center', lineHeight: '1.3' }}>
-                    {totName}
-                </Text>
-            </Card.Body>
-        </Card>
-    );
-}
 
