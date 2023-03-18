@@ -1,141 +1,115 @@
-import { Radio, Avatar,Dropdown, Loading, Table,Card,Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
-import {Columns} from '../components/oddsColumns.js'
-import {MLBcolumns} from '../components/mlbColumns.js'
-import {MLBteams} from './MLBteams.js'
-import React from "react";
+import React from 'react';
+import { Table, Loading } from '@nextui-org/react';
+import { Columns } from '../components/oddsColumns.js';
+import { MLBcolumns } from '../components/mlbColumns.js';
+import { MLBteams } from './MLBteams.js';
 
 export function GamesFun(games, error, isLoading, selected, league) {
-    
-    
-    if (error) return <div>Failed to load</div>
-    if (isLoading) return <Loading size = 'xl' />
+  if (error) return <div>Failed to load</div>;
+  if (isLoading) return <Loading size="xl" />;
 
-    const tableColumns = Columns(selected)
-    const MLBtColumns = MLBcolumns(selected)
-   
-    const gamesArray1 = Object.values(games)
-    const gamesArray2 = sortByCommenceTime(gamesArray1)
-    const gamesArray = getGamesWithinSameDay(gamesArray2)
- 
-    const mlbArray2 =  addBestOdds("", gamesArray1,"")
-    const mlbArray = sortByBestOdds(mlbArray2)
-    let pColumns = null
+  const tableColumns = Columns(selected);
+  const MLBtColumns = MLBcolumns(selected);
 
-    if (league ==='MLBws') {
-        pColumns = MLBtColumns
-    }else { pColumns = tableColumns
-            }
+  const gamesArray = getGamesWithinSameDay(sortByCommenceTime(games));
+  const mlbArray = sortByBestOdds(addBestOdds(games));
 
-    //returns a completed table of all information regarding games and odds
-    return (
+  const pColumns = league === 'MLBws' ? MLBtColumns : tableColumns;
+
+  return (
     <div>
-        
-        <div style={{ margin: '10px 0' }}></div>
-           
-        <Table
+      <div style={{ margin: '10px 0' }}></div>
+
+      <Table
         lined
         shadow={false}
         sticked
         aria-label="Example table with dynamic content"
         css={{
-            height: "auto",
-            minWidth: "100%",    
+          height: 'auto',
+          minWidth: '100%',
         }}
-        >
+      >
         <Table.Header columns={league === 'MLBws' ? MLBtColumns : tableColumns}>
-            {(column) => (
-            <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
-            )}
+          {(column) => (
+            <Table.Column key={column.key} align="center">
+              {column.label}
+            </Table.Column>
+          )}
         </Table.Header>
         <Table.Body items={league === 'MLBws' ? mlbArray : gamesArray}>
-        {(item,index) => (
-        <Table.Row key={index}>
-        {pColumns.map((column) =>
-            column.render ? column.render(item, column.key, {selected}, {league},{gamesArray1}) : (
-            <Table.Cell key={column.key} align = "center" >{item[column.key]}</Table.Cell>
-            )
-        )}
-        </Table.Row>
-    )}
+          {(item, index) => (
+            <Table.Row key={index}>
+              {pColumns.map((column) =>
+                column.render ? (
+                  column.render(item, column.key, { selected }, { league }, { games })
+                ) : (
+                  <Table.Cell key={column.key} align="center">
+                    {item[column.key]}
+                  </Table.Cell>
+                )
+              )}
+            </Table.Row>
+          )}
         </Table.Body>
-        </Table>
-    
+      </Table>
     </div>
-    );
+  );
 }
 
 function getGamesWithinSameDay(gamesArray) {
-    const currentDate = new Date();
-    const startOfDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-    const endOfDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1);
+  const currentDate = new Date();
+  const startOfDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+  const endOfDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1);
 
-    return gamesArray.filter((game) => {
-        const gameTime = new Date(game.commence_time);
-        return gameTime >= startOfDay && gameTime < endOfDay;
-    });
+  return gamesArray.filter((game) => {
+    const gameTime = new Date(game.commence_time);
+    return gameTime >= startOfDay && gameTime < endOfDay;
+  });
 }
-//sorts the games by commence time
+
 function sortByCommenceTime(events) {
-    return events.sort((a, b) => {
-      if (a.commence_time < b.commence_time) {
-        return -1;
-      }
-      if (a.commence_time > b.commence_time) {
-        return 1;
-      }
-      return 0;
-    });
-  }
+  return events.sort((a, b) => a.commence_time - b.commence_time);
+}
 
- 
 function sortByBestOdds(events) {
-    return events.sort((a, b) => {
-      if (a.price < b.price) {
-        return -1;
-      }
-      if (a.price > b.price) {
-        return 1;
-      }
-      return 0;
+  return events.sort((a, b) => a.price - b.price);
+}
+
+function addBestOdds(games) {
+  const mlbTeams = new MLBteams();
+  const mlbTeamNames = mlbTeams.getTeamNames();
+  let resultsArray = [];
+
+  mlbTeamNames.forEach((team) => {
+    let maxOdds = 0;
+    let maxName = null;
+
+    games[0].bookmakers.forEach((bookmaker) => {
+      MLBcolumns().forEach((column) => {
+        if (column.key === bookmaker.key) {
+          const futureMarket = bookmaker.markets.find((market) => market.key === 'outrights');
+
+          if (futureMarket) {
+            futureMarket.outcomes.forEach((outcome) => {
+              if (outcome.name === team.name && outcome.price > maxOdds) {
+                maxOdds = outcome.price;
+                maxName = outcome.name;
+              }
+            });
+          }
+        }
+      });
     });
-  }
 
-function addBestOdds(mlbArray, futArray, events){
-    let mlbTeamnamessamp = new MLBteams()
-    let mlbTeamMapsamp = mlbTeamnamessamp.getTeamNames()
-    let resultsArray = [];
-    
-    mlbTeamMapsamp.forEach((item) => {
-        let MLmax = 0;
-        let MLmaxName = null;
-        futArray[0].bookmakers.forEach((bookmaker) => {
-        MLBcolumns().forEach((column) => {
-            if (column.key === bookmaker.key) {
-                const futuremarket = bookmaker.markets.find((market) => market.key === 'outrights');
-
-                if (futuremarket){
-                    futuremarket.outcomes.forEach((outcome) => {
-                        if (outcome.name === item.name && (outcome.price > MLmax)) {
-                        MLmax = outcome.price;
-                        MLmaxName = outcome.name;
-                        }
-                    });
-                    }
-            }
-        })
-    })
-    
     const result = {
-        price: MLmax,
-        name: MLmaxName,
-        key: MLmaxName
-      };
-      
-      
-      resultsArray.push(result);
-    
-});
+      price: maxOdds,
+      name: maxName,
+      key: maxName,
+    };
 
-return (resultsArray)
+    resultsArray.push(result);
+  });
 
+  return resultsArray;
 }
