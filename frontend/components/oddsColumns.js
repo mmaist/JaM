@@ -4,11 +4,13 @@ import {NBAteams} from './NBAteams.js'
 import {NHLteams} from './NHLteams.js'
 import styles from '@/styles/Home.module.css'
 
-const matchColumnRender = (item) => (
-    <Table.Cell >
+
+const matchColumnRender = (item) => {
+    console.log("ODDSitem" + item)
+   return( <Table.Cell >
       <div className={styles.title}>{item['away_team']}<br></br> @ {item['home_team']}</div>
     </Table.Cell>
-);
+)};
 
   //returns matchup time
 const timeColumnRender = (item) => (
@@ -16,6 +18,8 @@ const timeColumnRender = (item) => (
        <div className={styles.title}> {moment.utc(item['commence_time']).tz('America/Los_Angeles').format('MMM D, h:mm A')}</div>
     </Table.Cell>
 );
+
+
 
 //returns the avatars with logos for eaach team
 const imageColumnRender = (item, keystring, {selected}, {league}) => {
@@ -243,6 +247,10 @@ awaySPren = bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"");
     );
   };
   
+
+
+
+
    //constants for the column. Includes key, label and which renderer to use
 export const Columns = (selected)=> {
     return([
@@ -359,7 +367,6 @@ function spreadRender(spreadNum, spreadPrice) {
           </Text>
           <Text
             size={14}
-            textAlign="center"
             css={{ textAlign: 'center', lineHeight: '1.5' }}>
                 {spreadPrice}
           </Text>
@@ -437,7 +444,6 @@ function bestTotRender(totNum, totPrice, totName, totName2) {
                 </Text>
                 <Text
                 size={13}
-                textAlign="center"
                 css={{ textAlign: 'center', lineHeight: '1.3' }}>
                     {totName}
                 </Text>
@@ -445,3 +451,4 @@ function bestTotRender(totNum, totPrice, totName, totName2) {
         </Card>
     );
 }
+
