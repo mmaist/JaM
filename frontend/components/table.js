@@ -8,7 +8,7 @@ import { SSRProvider } from "@react-aria/ssr";
 import { v4 as uuidv4 } from "uuid";
 
 
-export function GamesFun(games, error, isLoading, selected, league, liveJSON) {
+export function GamesFun(games, error, isLoading, selected, league, liveJSON, timeInterval) {
     if (error) return <div>Failed to load</div>
     if (isLoading || !games) return <Loading size = 'xl' />
 
@@ -64,7 +64,7 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON) {
           aria-label="MAIN TABLE"
           css={{
               height: "auto",
-              minWidth: "100%",    
+              width: "auto",
           }}
           >
           <Table.Header columns={league === 'MLBws' ? (liveJSON === 'LIVE' ? liveorNotColumns : MLBtColumns) : (liveJSON === 'LIVE' ? liveorNotColumns : tableColumns)} >
@@ -75,11 +75,12 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON) {
           <Table.Body items={league === 'MLBws' ? (liveJSON === 'LIVE' ? newLiveArray[0] : mlbArray) : (liveJSON === 'LIVE' ? newLiveArray[0] : gamesArray)} >
           {(item,index) => (
           <Table.Row key={uuidv4()}>
-          {pColumns.map((column, index) =>(
-              column.render ? column.render(item, column.key, {selected}, {league},{gamesArray1}) : (
-              <Table.Cell key={index+column.key} align = "center" >{column.key}</Table.Cell>)
-              
-              ))}
+          {pColumns.map((column, index) => (
+            column.key === "images" && league === "NCAAB"
+              ? null // exclude the images column if league is NCAAB
+              : (column.render ? column.render(item, column.key, {selected}, {league}, {gamesArray1}, timeInterval)
+                : <Table.Cell key={index+column.key} align="center">{column.key}</Table.Cell>)
+          ))}
           </Table.Row>
       )}
           </Table.Body>

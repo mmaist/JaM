@@ -1,5 +1,6 @@
 export class NBAteams {
     
+  //Contains: 
     constructor() {
         this.teams = [
                 {

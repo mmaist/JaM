@@ -36,6 +36,7 @@ if (item.event.state === "NOT_STARTED"){
   </g></svg>)
     return (<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{shape} <Text size = {15} css = {{marginLeft: "5px"}}>{"  " + periodConverter(item.liveData.matchClock.period)} · {item.liveData.matchClock.minutesLeftInPeriod}:{seconds}</Text></div>)
 }
+return(<div>N/A</div>)
 };
 
 const scoreRender = (item) => {
@@ -53,7 +54,7 @@ const scoreRender = (item) => {
 
 
 //returns the avatars with logos for eaach team
-const imageColumnRender = (item, keystring, {selected}, {league}) => {
+const imageColumnRender = (item, keystring, {selected}, {league}, live, timeInterval) => {
     let abbreviation;
         if (league === "NHL") {
             abbreviation = new NHLteams();
@@ -252,7 +253,7 @@ export const liveColumns = (selected)=> {
         abb: "BSOu",
         render: OUColumnRender
     },
-    
+
 
 ]);}
 

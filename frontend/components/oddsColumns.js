@@ -367,7 +367,6 @@ function spreadRender(spreadNum, spreadPrice) {
           </Text>
           <Text
             size={14}
-            textAlign="center"
             css={{ textAlign: 'center', lineHeight: '1.5' }}>
                 {spreadPrice}
           </Text>
@@ -445,7 +444,6 @@ function bestTotRender(totNum, totPrice, totName, totName2) {
                 </Text>
                 <Text
                 size={13}
-                textAlign="center"
                 css={{ textAlign: 'center', lineHeight: '1.3' }}>
                     {totName}
                 </Text>

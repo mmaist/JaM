@@ -5,66 +5,48 @@ import styles from '@/styles/Home.module.css'
 import useSWR from 'swr'
 import moment from 'moment-timezone'
 import {SSRProvider} from '@react-aria/ssr'
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Avatar, Loading, Popover,Button, Dropdown, Table, Card, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {GamesFun} from '../components/table.js'
 import { css } from '@emotion/react';
 
-
+const endpoints = {
+  NBA: 'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/nba/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
+  NCAAB: 'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/ncaab/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
+  NHL: 'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/ice_hockey/nhl/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US'
+};
 //Gathers data from our API and puts it into an array that then calls the display functions
-const fetcher = (...args) => fetch(...args).then((res) => res.json())
+const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
-function useDataFetcher(words, fetchered,league, word){
-const { data: games, error, isLoading } = useSWR('https://jam-pcynlb5fzq-uc.a.run.app/get'+league+'data', fetchered)
-if (words === "games"){                        
-    return games
-  }
-  if (words === "error"){
-    return error
-  }
-  if (words === "isLoading"){
-    return isLoading
-  }
-  return (games,error,isLoading)
-
-}
-
-function useDKLiveFetcher(words, fetchered, league, liveselected, timeInterval){
-  if (league === "NBA"){
-  const { data: games, error, isLoading } = useSWR('https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/nba/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US', fetchered);
-    
-  if (words === "games"){                        
-      return games;
-    }
-    if (words === "error"){
-      return error;
-    }
-    if (words === "isLoading"){
-      return isLoading;
-    }
-  }
-  if (league === "NHL"){
-  const { data: gamess, errorr, isLoadingg } = useSWR('https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/ice_hockey/nhl/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US', fetchered);
-    if (words === "games"){                        
-      return gamess;
-    }
-    if (words === "error"){
-      return errorr;
-    }
-    if (words === "isLoading"){
-      return isLoadingg;
-    }
-  }
+function useMainDataFetcher(words,fetchered, league, liveSelected){
 
   
-  return (null);
+    let endpoint = "";
+    if (liveSelected === "DAILY") {
+      endpoint = 'http://127.0.0.1:5000/get'+league+'data';
+    } else if (liveSelected === "LIVE") {
+      endpoint = endpoints[league];
+    }
+    const { data, error, isLoading } = useSWR(endpoint, fetchered);
+
+    if (words === 'games') {
+      return data;
+    }
+    if (words === 'error') {
+      return error;
+    }
+    if (words === 'isLoading') {
+      return isLoading;
+    }
+    return { data, error, isLoading }
+
+  
 }
 
 
 ///First thing that runs that sets up that page and then calls various functions
 export default function Home() {
- 
- 
+  
   const [formatValue, setforSelected] = React.useState(new Set(["moneyline"]));
   const formatselected = React.useMemo(
     () => Array.from(formatValue).join(", ").replaceAll("_", " "),
@@ -83,9 +65,23 @@ export default function Home() {
     [liveValue]
   );
 
+  const [timeInterval, setTimeInterval] = useState("1");
+
+  const { data: games, error, isLoading } = useMainDataFetcher(
+    "gamesss",
+    fetcher,
+    leagueselected,
+    liveselected
+  );
+
+ 
+
   let disMLB = ""
   if (liveselected === "LIVE"){
     disMLB = "MLBws"
+  }
+  else{
+    disMLB = "NCAAB"
   }
   let disLive = ""
   let disSelection = ""
@@ -93,36 +89,13 @@ export default function Home() {
     disLive = "LIVE"
     disSelection = ["moneyline","spread","total"]
   }
-  
-
-  let games = null;
-  let error = null;
-  let isLoading = null;
-
-const [timeInterval, setTimeInterval] = useState("1");
-
-  useEffect(() => {
-    if (liveselected === "LIVE") {
-      const interval = setInterval(() => {
-        setTimeInterval((prevTimeInterval) =>
-          prevTimeInterval === "t1" ? "t2" : "t1"
-        );
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [liveselected]);
-
-  if (liveselected === "LIVE"){
-     games = useDKLiveFetcher("games",fetcher, leagueselected, liveselected, timeInterval)
-      error = useDKLiveFetcher("error",fetcher, leagueselected, liveselected, timeInterval)
-      isLoading = useDKLiveFetcher("isLoading",fetcher, leagueselected, liveselected, timeInterval)
-  }
-  else{
-      games = useDataFetcher("games",fetcher, leagueselected)
-      error = useDataFetcher("error",fetcher, leagueselected)
-      isLoading = useDataFetcher("isLoading",fetcher, leagueselected)
+  if (leagueselected === "NCAAB"){
+    disLive = "DAILY"
   }
 
+
+
+ 
 
   
 
@@ -136,7 +109,7 @@ const [timeInterval, setTimeInterval] = useState("1");
           <link rel="icon" href="/basketball.png" />
         </Head>
         <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 12 }}>
-          ARBITRAGE v1.2<img alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
+          ARBITRAGE v1.2<Image alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
         </h1>
         
         <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '14px' }}>
@@ -176,6 +149,7 @@ const [timeInterval, setTimeInterval] = useState("1");
               <Dropdown.Item key="NBA">NBA</Dropdown.Item>
               <Dropdown.Item key="NHL">NHL</Dropdown.Item>
               <Dropdown.Item key="MLBws">Win &apos;23 WS</Dropdown.Item>
+              <Dropdown.Item key = "NCAAB">NCAAB</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
 
@@ -208,8 +182,10 @@ const [timeInterval, setTimeInterval] = useState("1");
         </div>
       </div>
       <div style={{ margin: '0px 0' }}></div>
-      <ErrorBoundary key={formatselected + leagueselected + liveselected + timeInterval}>
-        {GamesFun(games, error, isLoading,formatselected, leagueselected, liveselected, timeInterval)}
+      <ErrorBoundary key={formatselected + leagueselected + liveselected}>
+        {
+          GamesFun(games, error, isLoading, formatselected, leagueselected, liveselected)
+        }
       </ErrorBoundary>
       </SSRProvider>
     
