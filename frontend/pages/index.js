@@ -23,7 +23,7 @@ function useMainDataFetcher(words,fetchered, league, liveSelected){
 
   let endpoint = "";
   if (liveSelected === "DAILY") {
-    endpoint = 'https://jam-pcynlb5fzq-uc.a.run.app'+league+'data';
+    endpoint = 'https://jam-pcynlb5fzq-uc.a.run.app/get'+league+'data';
   } else if (liveSelected === "LIVE") {
     endpoint = endpoints[league];
   }
