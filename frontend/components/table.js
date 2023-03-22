@@ -32,11 +32,6 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON, ti
    }
     // Use map() to add a unique id to eah object in newLiveArray
     
-   
-    
-    
-
-
     let mlbArray = null;
     if (league ==='MLBws' && liveJSON === 'DAILY') {
     const mlbArray2 =  addBestOdds("", gamesArray1,"")

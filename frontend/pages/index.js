@@ -10,37 +10,35 @@ import { Avatar, Loading, Popover,Button, Dropdown, Table, Card, NextUIProvider,
 import {GamesFun} from '../components/table.js'
 import { css } from '@emotion/react';
 
+//Barstool sports live links
 const endpoints = {
   NBA: 'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/nba/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
   NCAAB: 'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/ncaab/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
   NHL: 'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/ice_hockey/nhl/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US'
 };
-//Gathers data from our API and puts it into an array that then calls the display functions
+
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 function useMainDataFetcher(words,fetchered, league, liveSelected){
 
-  
-    let endpoint = "";
-    if (liveSelected === "DAILY") {
-      endpoint = 'http://127.0.0.1:5000/get'+league+'data';
-    } else if (liveSelected === "LIVE") {
-      endpoint = endpoints[league];
-    }
-    const { data, error, isLoading } = useSWR(endpoint, fetchered);
+  let endpoint = "";
+  if (liveSelected === "DAILY") {
+    endpoint = 'https://jam-pcynlb5fzq-uc.a.run.app'+league+'data';
+  } else if (liveSelected === "LIVE") {
+    endpoint = endpoints[league];
+  }
+  const { data, error, isLoading, revalidate } = useSWR(endpoint, fetchered, { refreshInterval: 3000 });
 
-    if (words === 'games') {
-      return data;
-    }
-    if (words === 'error') {
-      return error;
-    }
-    if (words === 'isLoading') {
-      return isLoading;
-    }
-    return { data, error, isLoading }
-
-  
+  if (words === 'games') {
+    return data;
+  }
+  if (words === 'error') {
+    return error;
+  }
+  if (words === 'isLoading') {
+    return isLoading;
+  }
+  return { data, error, isLoading }
 }
 
 
@@ -59,13 +57,12 @@ export default function Home() {
     [leagueValue]
   );
 
-  const [liveValue, setliveSelected] = React.useState(new Set(["LIVE"]));
+  const [liveValue, setliveSelected] = React.useState(new Set(["DAILY"]));
   const liveselected = React.useMemo(
     () => Array.from(liveValue).join(", ").replaceAll("_", " "),
     [liveValue]
   );
 
-  const [timeInterval, setTimeInterval] = useState("1");
 
   const { data: games, error, isLoading } = useMainDataFetcher(
     "gamesss",
@@ -80,18 +77,13 @@ export default function Home() {
   if (liveselected === "LIVE"){
     disMLB = "MLBws"
   }
-  else{
-    disMLB = "NCAAB"
-  }
   let disLive = ""
   let disSelection = ""
   if (leagueselected === "MLBws"){
     disLive = "LIVE"
     disSelection = ["moneyline","spread","total"]
   }
-  if (leagueselected === "NCAAB"){
-    disLive = "DAILY"
-  }
+  
 
 
 
