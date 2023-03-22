@@ -85,3 +85,20 @@ def getMLBData():
     #   outfile.write(json_return)
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
+@app.route('/getNCAABdata')
+def getNCAABData():
+    
+    father_dict = {}
+    gamecounter = 0
+    db = firestore.Client(project='peppy-sensor-375905')
+
+    query = db.collection(u'NCAAB').order_by(u'commence_time', direction=firestore.Query.ASCENDING).limit(10).stream()
+
+    for doc in query:
+        gamecounter = gamecounter + 1
+        father_dict['game'+ (str(gamecounter))] = doc.to_dict()
+    
+    json_return = json.dumps(father_dict)
+    return(json_return)
+    
