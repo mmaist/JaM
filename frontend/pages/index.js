@@ -97,11 +97,11 @@ export default function Home() {
       <SSRProvider>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Head>
-          <title>ARBITRAGE v1.2</title>
+          <title>ARBITRAGE v1.4</title>
           <link rel="icon" href="/basketball.png" />
         </Head>
         <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 12 }}>
-          ARBITRAGE v1.2<Image alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
+          ARBITRAGE v1.4<Image alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
         </h1>
         
         <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '14px' }}>
