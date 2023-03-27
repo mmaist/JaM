@@ -12,13 +12,18 @@ import { css } from '@emotion/react';
 
 //Barstool sports live links
 const endpoints = {
-  NBA: 'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/nba/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
-  NCAAB: 'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/ncaab/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
-  NHL: 'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/ice_hockey/nhl/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US'
+  NBA:
+    'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/nba/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
+  NCAAB:
+    'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/ncaab/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
+  NHL:
+    'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/ice_hockey/nhl/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
 };
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
+//DataFetcher that returns the data from Barstool Sports live API or the daily data from the custom backend. Returns data,error,isLoading
+// based on words, for the league based on league parameter
 function useMainDataFetcher(words,fetchered, league, liveSelected){
 
   let endpoint = "";
@@ -42,7 +47,8 @@ function useMainDataFetcher(words,fetchered, league, liveSelected){
 }
 
 
-///First thing that runs that sets up that page and then calls various functions
+///Creates the header and top dropdown elements that allow for user to switch table data
+// also calls gamesFun to create the table based on dropdown elements
 export default function Home() {
   
   const [formatValue, setforSelected] = React.useState(new Set(["moneyline"]));
@@ -71,8 +77,7 @@ export default function Home() {
     liveselected
   );
 
- 
-
+  //Dis selection elements for MLB futures
   let disMLB = ""
   if (liveselected === "LIVE"){
     disMLB = "MLBws"
@@ -84,16 +89,8 @@ export default function Home() {
     disSelection = ["moneyline","spread","total"]
   }
   
-
-
-
- 
-
-  
-
-
+  //Returns frontend elements
   return (
-    
       <SSRProvider>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Head>
@@ -140,7 +137,7 @@ export default function Home() {
             >
               <Dropdown.Item key="NBA">NBA</Dropdown.Item>
               <Dropdown.Item key="NHL">NHL</Dropdown.Item>
-              <Dropdown.Item key="MLBws">Win &apos;23 WS</Dropdown.Item>
+              <Dropdown.Item key="MLBws">&apos;23 WS Winner</Dropdown.Item>
               <Dropdown.Item key = "NCAAB">NCAAB</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>

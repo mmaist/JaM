@@ -19,10 +19,22 @@ const matchColumnRender = (item) => {
 
   //returns matchup time
 function timeColumnRender(item){
-if (item.event.state === "NOT_STARTED"){
-    return(
-       <> {moment.utc(item.event.start).tz('America/Los_Angeles').format('MMM D, h:mm A')}</>
-    )
+    if (item.event.state === "NOT_STARTED") {
+        const startTime = new Date(item.event.start)
+        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        const formattedStartTime = startTime.toLocaleString('en-US', {
+          timeZone: userTimeZone,
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true
+        })
+      
+        return (
+          <>{formattedStartTime}</>
+        )
+      
     }else{
     let minutes = item.liveData.matchClock.minutesLeftInPeriod;
     let seconds = item.liveData.matchClock.secondsLeftInMinute;
