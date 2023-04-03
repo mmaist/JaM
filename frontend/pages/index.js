@@ -18,6 +18,8 @@ const endpoints = {
     'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/basketball/ncaab/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
   NHL:
     'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/ice_hockey/nhl/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US',
+  MLB:
+    'https://eu-offering-api.kambicdn.com/offering/v2018/pivuspa/listView/baseball/mlb/all/all/matches.json?market=US&market=US&includeParticipants=true&useCombined=true&lang=en_US'
 };
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
@@ -57,7 +59,7 @@ export default function Home() {
     [formatValue]
   );
 
-  const [leagueValue, setleagueSelected] = React.useState(new Set(["NBA"]));
+  const [leagueValue, setleagueSelected] = React.useState(new Set(["MLB"]));
   const leagueselected = React.useMemo(
     () => Array.from(leagueValue).join(", ").replaceAll("_", " "),
     [leagueValue]
@@ -94,11 +96,11 @@ export default function Home() {
       <SSRProvider>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Head>
-          <title>ARBITRAGE v1.4</title>
+          <title>ARBITRAGE v1.5</title>
           <link rel="icon" href="/basketball.png" />
         </Head>
         <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 12 }}>
-          ARBITRAGE v1.4<Image alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
+          ARBITRAGE v1.5<Image alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
         </h1>
         
         <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '14px' }}>
@@ -139,9 +141,12 @@ export default function Home() {
               <Dropdown.Item key="NHL">NHL</Dropdown.Item>
               <Dropdown.Item key="MLBws">&apos;23 WS Winner</Dropdown.Item>
               <Dropdown.Item key = "NCAAB">NCAAB</Dropdown.Item>
+              <Dropdown.Item key = "MLB">MLB</Dropdown.Item>
+
             </Dropdown.Menu>
           </Dropdown>
 
+          {liveselected === "DAILY" ? (
           <Dropdown key="format">
             <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px',marginRight: '14px', marginTop: '18px' }}>
               {formatselected}
@@ -160,12 +165,12 @@ export default function Home() {
               <Dropdown.Item key="spread">Spread</Dropdown.Item>
               <Dropdown.Item key="total">Total</Dropdown.Item>
             </Dropdown.Menu>
-          </Dropdown>
+          </Dropdown>): <div></div>}
           <Popover isBordered placement="left-top">
             <Popover.Trigger>
-              <Button auto bordered aria-label = "popover Button" color="success" css={{ display: 'flex', position: 'fixed', top: '1%', right: '1%' }}>?</Button>
+              <Button auto bordered aria-label = "popover Button" color="success" css={{ display: 'flex', position: 'absolute', top: '18px', right: '1%' }}>?</Button>
             </Popover.Trigger>
-            <Popover.Content css = {{backgroundColor: '#F0F3F5', padding: '8px'}}><b>LIVE:</b> Updates odds for barstool sportsbook every 5 seconds.<br></br><b>DAILY: </b>Odds are updated once a day at 8:45 PST</Popover.Content>
+            <Popover.Content css = {{backgroundColor: '#F0F3F5', padding: '8px'}}><b>LIVE:</b> Updates odds for barstool sportsbook every 3 seconds.<br></br><b>DAILY: </b>Odds are updated once a day at 8:45 PST</Popover.Content>
           </Popover>
           
         </div>

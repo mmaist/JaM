@@ -2,6 +2,7 @@ import { Radio, Avatar, Loading,Image,  Card,Grid, Table, Text, NextUIProvider, 
 import moment from 'moment-timezone'
 import {NBAteams} from './NBAteams.js'
 import {NHLteams} from './NHLteams.js'
+import {MLBteams} from './MLBteams.js'
 import styles from '@/styles/Home.module.css'
 
 
@@ -19,6 +20,12 @@ const matchColumnRender = (item) => {
 
   //returns matchup time
 function timeColumnRender(item){
+    const shape = (<svg width = "17" height = "18">
+    <g fill="none" fill-rule= "evenodd">
+    <circle cx="8" cy="9" r="4" fill = "#CC0202" />
+    <circle cx="8" cy="9" r="7.5" stroke = "#E95353" />
+  </g></svg>)
+
     if (item.event.state === "NOT_STARTED") {
         const startTime = new Date(item.event.start)
         const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -36,18 +43,17 @@ function timeColumnRender(item){
         )
       
     }else{
+    if (!item.liveData.matchClock){
+        let inning = inningConverter(item.liveData.score.info)
+        return (<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{shape} <Text size = {15} css = {{marginLeft: "5px"}}>{inning}</Text></div>)
+    }else{
     let minutes = item.liveData.matchClock.minutesLeftInPeriod;
     let seconds = item.liveData.matchClock.secondsLeftInMinute;
     if (seconds < 10){
         seconds = "0" + seconds;
     }
- const shape = (<svg width = "17" height = "18">
-    <g fill="none" fill-rule= "evenodd">
-    <circle cx="8" cy="9" r="4" fill = "#CC0202" />
-    <circle cx="8" cy="9" r="7.5" stroke = "#E95353" />
-  </g></svg>)
     return (<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{shape} <Text size = {15} css = {{marginLeft: "5px"}}>{"  " + periodConverter(item.liveData.matchClock.period)} · {item.liveData.matchClock.minutesLeftInPeriod}:{seconds}</Text></div>)
-}
+}}
 return(<div>N/A</div>)
 };
 
@@ -70,7 +76,10 @@ const imageColumnRender = (item, keystring, {selected}, {league}, live, timeInte
     let abbreviation;
         if (league === "NHL") {
             abbreviation = new NHLteams();
-        } else {
+        } else if (league === "MLB"){
+            abbreviation = new MLBteams();
+        }else
+         {
             abbreviation = new NBAteams();
         }
     const hometeam = "/"+league+"img/" + abbreviation.getImgByCombinedName(item.event.homeName)
@@ -400,5 +409,28 @@ function totRender(totNum, totPrice, totName) {
         </Card>
     );
 }
+
+function inningConverter(str){
+    const innings = str.split(' | ');
+    const numInnings = innings.length;
+    let inningSuffix;
+  
+    switch (numInnings) {
+      case 1:
+        inningSuffix = 'st';
+        break;
+      case 2:
+        inningSuffix = 'nd';
+        break;
+      case 3:
+        inningSuffix = 'rd';
+        break;
+      default:
+        inningSuffix = 'th';
+        break;
+    }
+  
+    return `${numInnings}${inningSuffix} Inning`;
+  }
 
 

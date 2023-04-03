@@ -270,6 +270,7 @@ export class NHLteams {
 
       getImgByName(name) {
         const teamname = this.teams.find((team) => team.name === name);
+        console.log(name + "teams" + teamname)
         return teamname && teamname.image ? teamname.image : 'null';
       }
     

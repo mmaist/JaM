@@ -2,6 +2,7 @@ import { Radio, Avatar, Loading,Image,  Card,Grid, Table, Text, NextUIProvider, 
 import moment from 'moment-timezone'
 import {NBAteams} from './NBAteams.js'
 import {NHLteams} from './NHLteams.js'
+import {MLBteams} from './MLBteams.js'
 import styles from '@/styles/Home.module.css'
 
 //Renders team names
@@ -28,11 +29,18 @@ const imageColumnRender = (item, keystring, {selected}, {league}) => {
     let abbreviation;
         if (league === "NHL") {
             abbreviation = new NHLteams();
-        } else {
+        } else if (league === "MLB"){
+            abbreviation = new MLBteams();
+        }
+        else {
             abbreviation = new NBAteams();
         }
     const hometeam = "/"+league+"img/" + abbreviation.getImgByName(item['home_team'])
     const awayteam = "/"+league+"img/" + abbreviation.getImgByName(item['away_team'])
+    if (league==="NHL")
+    {
+        console.log(hometeam)
+    }
     return(
     <Table.Cell>
     <Image
@@ -57,9 +65,13 @@ const imageColumnRender = (item, keystring, {selected}, {league}) => {
 const bookColumnRender = (item, keystring, {selected},league) => {
     let abbreviation;
     if (league === "NHL") {
-            abbreviation = new NHLteams();
-    } else {
-            abbreviation = new NBAteams();
+        abbreviation = new NHLteams();
+    } 
+    if (league === "MLB"){
+        abbreviation = new MLBteams();
+    }
+    else {
+        abbreviation = new NBAteams();
     }
     const searchResult = item.bookmakers.find((bookmaker) => bookmaker.key === keystring);
    
@@ -205,8 +217,8 @@ homeMLren = spreadRender(plusAdder(MLmin),MLminName);
 
 let homeSPren = null;
 let awaySPren = null;
-homeSPren = bestTotRender(plusAdder(SPmin),SPminPrice,SPminName,"")
-awaySPren = bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"");
+homeSPren = bestTotRender(plusAdder(SPmin),plusAdder(SPminPrice),SPminName,"")
+awaySPren = bestTotRender(plusAdder(SPmax),plusAdder(SPmaxPrice),SPmaxName,"");
 
 
     if (selected == "moneyline"){
