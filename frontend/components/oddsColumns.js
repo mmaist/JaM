@@ -2,39 +2,47 @@ import { Radio, Avatar, Loading,Image,  Card,Grid, Table, Text, NextUIProvider, 
 import moment from 'moment-timezone'
 import {NBAteams} from './NBAteams.js'
 import {NHLteams} from './NHLteams.js'
+import {MLBteams} from './MLBteams.js'
 import styles from '@/styles/Home.module.css'
 
-
+//Renders team names
 const matchColumnRender = (item) => {
-    console.log("ODDSitem" + item)
    return( <Table.Cell >
       <div className={styles.title}>{item['away_team']}<br></br> @ {item['home_team']}</div>
     </Table.Cell>
 )};
 
-  //returns matchup time
-const timeColumnRender = (item) => (
-    <Table.Cell>
-       <div className={styles.title}> {moment.utc(item['commence_time']).tz('America/Los_Angeles').format('MMM D, h:mm A')}</div>
-    </Table.Cell>
-);
+//Renders matchup time based on users timezone
+const timeColumnRender = (item) => {
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const localTime = moment.utc(item.commence_time).tz(userTimezone);
+    return (
+      <Table.Cell>
+        <div className={styles.title}>{localTime.format('MMM D, h:mm A')}</div>
+      </Table.Cell>
+    );
+  };
 
 
-
-//returns the avatars with logos for eaach team
+//Renders team logos from NBAteams or NHLteams
 const imageColumnRender = (item, keystring, {selected}, {league}) => {
     let abbreviation;
         if (league === "NHL") {
             abbreviation = new NHLteams();
-        } else {
+        } else if (league === "MLB"){
+            abbreviation = new MLBteams();
+        }
+        else {
             abbreviation = new NBAteams();
         }
     const hometeam = "/"+league+"img/" + abbreviation.getImgByName(item['home_team'])
     const awayteam = "/"+league+"img/" + abbreviation.getImgByName(item['away_team'])
-
+    if (league==="NHL")
+    {
+        console.log(hometeam)
+    }
     return(
     <Table.Cell>
-    
     <Image
             src={awayteam}
             alt = {item['away_team']}
@@ -47,23 +55,24 @@ const imageColumnRender = (item, keystring, {selected}, {league}) => {
             alt = {item['home_team']}
             width = {70}
             height = {70}
-        />
-       
+        /> 
     </Table.Cell>
     )
 };
 
 
-//Render for DraftKings. Gathers all the information from 'item' and returns it in a displayable format
+//Render for all sportbook columns. Gathers all the information from 'item' and returns it in a displayable format
 const bookColumnRender = (item, keystring, {selected},league) => {
-    //Finds the specific book for each game, if the isn't found it returns N/A
     let abbreviation;
     if (league === "NHL") {
-            abbreviation = new NHLteams();
-    } else {
-            abbreviation = new NBAteams();
+        abbreviation = new NHLteams();
+    } 
+    if (league === "MLB"){
+        abbreviation = new MLBteams();
     }
-
+    else {
+        abbreviation = new NBAteams();
+    }
     const searchResult = item.bookmakers.find((bookmaker) => bookmaker.key === keystring);
    
     let retMes = null;
@@ -76,11 +85,11 @@ const bookColumnRender = (item, keystring, {selected},league) => {
             </Table.Cell>
             )
     }
-    if (searchResult){
-        const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
-        const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
-        const totalsmarket = searchResult.markets.find((tmarket) => tmarket.key === 'totals');
-        
+   
+    const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
+    const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
+    const totalsmarket = searchResult.markets.find((tmarket) => tmarket.key === 'totals');
+            
     if (selected=="moneyline" && h2hmarket) {
         const sortOutcomes1 = sortOutcomesByTeamName(h2hmarket.outcomes,item);
         retMes = sortOutcomes1.map((outcome) => (
@@ -102,7 +111,6 @@ const bookColumnRender = (item, keystring, {selected},league) => {
         ))
         retMes = retMes ? [...retMes, ...outcomes2] : outcomes2;
     }
-
     if (!retMes) {
         return (
         <Table.Cell>
@@ -111,17 +119,15 @@ const bookColumnRender = (item, keystring, {selected},league) => {
         </Table.Cell>
         )
     }
-
     return (
         <Table.Cell>
         {retMes}
         </Table.Cell>
     );
-    }
 
 };
 
-
+//Finds the best odds for each game, uses the list of current sportsbooks and selected to find the best odds for given selection
 const bestOddsRender = (item, keystring, {selected}) => {
     let MLmax = -100000000;
     let MLmaxName = null;
@@ -211,8 +217,8 @@ homeMLren = spreadRender(plusAdder(MLmin),MLminName);
 
 let homeSPren = null;
 let awaySPren = null;
-homeSPren = bestTotRender(plusAdder(SPmin),SPminPrice,SPminName,"")
-awaySPren = bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"");
+homeSPren = bestTotRender(plusAdder(SPmin),plusAdder(SPminPrice),SPminName,"")
+awaySPren = bestTotRender(plusAdder(SPmax),plusAdder(SPmaxPrice),SPmaxName,"");
 
 
     if (selected == "moneyline"){
@@ -245,13 +251,9 @@ awaySPren = bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"");
         Best Odds N/A
       </Table.Cell>
     );
-  };
+};
   
-
-
-
-
-   //constants for the column. Includes key, label and which renderer to use
+//constants for the column. Includes key, label and which renderer to use
 export const Columns = (selected)=> {
     return([
     {
@@ -339,6 +341,7 @@ export const Columns = (selected)=> {
 
 ]);}
 
+//checks if num is positive and adds a + sign if it is
 function plusAdder(num){
     if (num > 0){
         return "+" + num
@@ -346,14 +349,15 @@ function plusAdder(num){
     else return (num)
 }
 
+//makes sure odds will show up in correct order
 function sortOutcomesByTeamName(outcomes, items) {
     return outcomes.slice().sort((a, b) => {
       if (a.name === items['home_team']) return 1;
       if (b.name === items['home_team']) return -1;
       return 0;
     });
-  }
-
+}
+//returns a card for spread
 function spreadRender(spreadNum, spreadPrice) {
     return (
       <Card variant="bordered"
@@ -375,8 +379,8 @@ function spreadRender(spreadNum, spreadPrice) {
     );
 }
 
+//returns a card for ML
 function h2hRender(h2hPrice) {
-
     return (
             <Card variant="bordered"
             css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
@@ -392,12 +396,12 @@ function h2hRender(h2hPrice) {
       );
 
 }
+//returns a card for total
 function totRender(totNum, totPrice, totName) {
     let ou = "o"
     if (totName === "Under"){
         ou = "u"
     }
-
     return (
         <Card variant="bordered"
         css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
@@ -417,7 +421,7 @@ function totRender(totNum, totPrice, totName) {
         </Card>
     );
 }
-
+//returns a card for best total
 function bestTotRender(totNum, totPrice, totName, totName2) {
     let ou = ""
     if (totName2 === "Under"){

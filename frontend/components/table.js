@@ -62,7 +62,7 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON, ti
               width: "auto",
           }}
           >
-          <Table.Header columns={league === 'MLBws' ? (liveJSON === 'LIVE' ? liveorNotColumns : MLBtColumns) : (liveJSON === 'LIVE' ? liveorNotColumns : tableColumns)} >
+          <Table.Header css={{position: 'sticky'}} columns={league === 'MLBws' ? (liveJSON === 'LIVE' ? liveorNotColumns : MLBtColumns) : (liveJSON === 'LIVE' ? liveorNotColumns : tableColumns)} >
               {(column) => (
               <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
               )}

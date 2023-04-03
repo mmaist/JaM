@@ -261,9 +261,5 @@ export class NBAteams {
       const teamname = this.teams.find((team) => team.liveName === name);
       return teamname && teamname.image ? teamname.image : 'null';
     }
-    
-
-    
-    
-
+  
 }
