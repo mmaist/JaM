@@ -67,7 +67,7 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON, ti
               <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
               )}
           </Table.Header>
-          <Table.Body items={league === 'MLBws' ? (liveJSON === 'LIVE' ? newLiveArray[0] : mlbArray) : (liveJSON === 'LIVE' ? newLiveArray[0] : gamesArray)} >
+          <Table.Body css= {{position: 'sticky'}} items={league === 'MLBws' ? (liveJSON === 'LIVE' ? newLiveArray[0] : mlbArray) : (liveJSON === 'LIVE' ? newLiveArray[0] : gamesArray)} >
           {(item,index) => (
           <Table.Row key={uuidv4()}>
           {pColumns.map((column, index) => (

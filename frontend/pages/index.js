@@ -6,7 +6,7 @@ import useSWR from 'swr'
 import moment from 'moment-timezone'
 import {SSRProvider} from '@react-aria/ssr'
 import React, { useEffect, useState, useCallback } from 'react';
-import { Avatar, Loading, Popover,Button, Dropdown, Table, Card, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Avatar, Loading,Navbar,  Popover,Button, Dropdown, Table, Card,Grid,  NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {GamesFun} from '../components/table.js'
 import { css } from '@emotion/react';
 
@@ -94,20 +94,24 @@ export default function Home() {
   //Returns frontend elements
   return (
       <SSRProvider>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Head>
           <title>ARBITRAGE v1.5</title>
           <link rel="icon" href="/basketball.png" />
         </Head>
+        <Grid.Container justify="center" maxWidth= {false}>
+        <Navbar isBordered variant="floating">
+        <Navbar.Brand hideIn="xs">
         <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 12 }}>
           ARBITRAGE v1.5<Image alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
         </h1>
-        
-        <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '14px' }}>
-          <Dropdown key="liveOrnot" style={{ marginLeft: '14px' }}>
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '20px', marginRight: '14px', marginTop: '18px' }}>
+        </Navbar.Brand>
+        <Navbar.Content>
+            <Dropdown key="liveOrnot" style={{ marginLeft: '14px' }}>
+            <Navbar.Item>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '20px', marginRight: '14px' }}>
               {liveValue}
             </Dropdown.Button>
+            </Navbar.Item>
             <Dropdown.Menu
               aria-label="LIVE-DAILY"
               color="success"
@@ -124,9 +128,11 @@ export default function Home() {
           </Dropdown>
 
           <Dropdown key="league" style={{ marginLeft: '14px' }}>
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px',marginRight: '14px', marginTop: '18px' }}>
+            <Navbar.Item>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px',marginRight: '14px'}}>
               {leagueValue}
             </Dropdown.Button>
+            </Navbar.Item>
             <Dropdown.Menu
               aria-label="LEAGUE-DROPDOWN"
               color="success"
@@ -148,9 +154,11 @@ export default function Home() {
 
           {liveselected === "DAILY" ? (
           <Dropdown key="format">
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px',marginRight: '14px', marginTop: '18px' }}>
+            <Navbar.Item>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px',marginRight: '14px' }}>
               {formatselected}
             </Dropdown.Button>
+            </Navbar.Item>
             <Dropdown.Menu
               aria-label="FORMAT-DROPDOWN"
               color="success"
@@ -168,20 +176,26 @@ export default function Home() {
           </Dropdown>): <div></div>}
           <Popover isBordered placement="left-top">
             <Popover.Trigger>
-              <Button auto bordered aria-label = "popover Button" color="success" css={{ display: 'flex', position: 'absolute', top: '18px', right: '1%' }}>?</Button>
+            <Navbar.Item>
+              <Button auto bordered aria-label = "popover Button" color="success" style={{ marginLeft: '3px',marginRight: '14px' }}>?</Button>
+              </Navbar.Item>
             </Popover.Trigger>
             <Popover.Content css = {{backgroundColor: '#F0F3F5', padding: '8px'}}><b>LIVE:</b> Updates odds for barstool sportsbook every 3 seconds.<br></br><b>DAILY: </b>Odds are updated once a day at 8:45 PST</Popover.Content>
           </Popover>
-          
-        </div>
-      </div>
-      <div style={{ margin: '0px 0' }}></div>
+          </Navbar.Content>
+          </Navbar>
+      
+      <Grid >
       <ErrorBoundary key={formatselected + leagueselected + liveselected}>
         {
           GamesFun(games, error, isLoading, formatselected, leagueselected, liveselected)
         }
       </ErrorBoundary>
+      </Grid>
+      </Grid.Container>
+      
       </SSRProvider>
+      
     
   );
   
