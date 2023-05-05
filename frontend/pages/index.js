@@ -9,7 +9,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Avatar, Loading,Navbar, Container, Popover,Button, Dropdown, Table, Card,Grid,  NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {GamesFun} from '../components/table.js'
 import { css } from '@emotion/react';
-
+import { isMobile } from 'react-device-detect';
 
 //Barstool sports live links
 const endpoints = {
@@ -91,7 +91,21 @@ export default function Home() {
     disLive = "LIVE"
     disSelection = ["moneyline","spread","total"]
   }
-  
+  const [shouldHideOnScrolly, setShouldHideOnScrolly] = useState(!isMobile);
+
+  useEffect(() => {
+    function handleResize() {
+      setShouldHideOnScrolly(!isMobile);
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+
   //Returns frontend elements
   return (
       <SSRProvider>
@@ -101,18 +115,18 @@ export default function Home() {
           <meta name="viewport" content="width=device-width, initial-scale=.5" />
         </Head>
         
-        <Navbar shouldHideOnScroll isBordered variant="floating">
+      <Navbar shouldHideOnScroll={shouldHideOnScrolly} isBordered variant="floating">
        <Navbar.Brand gap ="25px">
-        <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 0 }}>
-          ARBITRAGE v1.6 </h1>
+            <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 0 }}>ARBITRAGE v1.6 </h1>
         </Navbar.Brand>
         <Navbar.Content gap ='25px'>
+
             <Dropdown key="liveOrnot" >
-            <Navbar.Item>
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}>
-              {liveValue}
-            </Dropdown.Button>
-            </Navbar.Item>
+              <Navbar.Item>
+              <Dropdown.Button color="success" css={{ tt: "capitalize"}}>
+                {liveValue}
+              </Dropdown.Button>
+              </Navbar.Item>
             <Dropdown.Menu
               aria-label="LIVE-DAILY"
               color="success"
@@ -149,7 +163,6 @@ export default function Home() {
               <Dropdown.Item key="MLBws">&apos;23 WS Winner</Dropdown.Item>
               <Dropdown.Item key = "NCAAB">NCAAB</Dropdown.Item>
               <Dropdown.Item key = "MLB">MLB</Dropdown.Item>
-
             </Dropdown.Menu>
           </Dropdown>
 
@@ -175,6 +188,7 @@ export default function Home() {
               <Dropdown.Item key="total">Total</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>): <div></div>}
+
           <Popover isBordered placement="bottom">
           <Navbar.Item hideIn ="sm">
             <Popover.Trigger>
@@ -183,21 +197,15 @@ export default function Home() {
             </Navbar.Item>
             <Popover.Content css = {{backgroundColor: '#F0F3F5', padding: '8px'}}><b>LIVE:</b> Updates odds for barstool sportsbook every 3 seconds.<br></br><b>DAILY: </b>Odds are updated once a day at 8:45 PST</Popover.Content>
           </Popover>
+
           </Navbar.Content>
           </Navbar>
-      
-      
       <ErrorBoundary key={formatselected + leagueselected + liveselected}>
         {
           GamesFun(games, error, isLoading, formatselected, leagueselected, liveselected)
         }
       </ErrorBoundary>
-      
-      
-      
       </SSRProvider>
-      
-    
   );
   
 
