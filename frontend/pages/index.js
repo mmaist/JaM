@@ -91,19 +91,7 @@ export default function Home() {
     disLive = "LIVE"
     disSelection = ["moneyline","spread","total"]
   }
-  const [shouldHideOnScrolly, setShouldHideOnScrolly] = useState(!isMobile);
-
-  useEffect(() => {
-    function handleResize() {
-      setShouldHideOnScrolly(!isMobile);
-    }
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+ 
 
 
   //Returns frontend elements
@@ -115,7 +103,7 @@ export default function Home() {
           <meta name="viewport" content="width=device-width, initial-scale=.5" />
         </Head>
         
-      <Navbar shouldHideOnScroll={shouldHideOnScrolly} isBordered variant="floating">
+      <Navbar isBordered variant="floating">
        <Navbar.Brand gap ="25px">
             <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 0 }}>ARBITRAGE v1.6 </h1>
         </Navbar.Brand>
