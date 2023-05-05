@@ -6,7 +6,7 @@ import useSWR from 'swr'
 import moment from 'moment-timezone'
 import {SSRProvider} from '@react-aria/ssr'
 import React, { useEffect, useState, useCallback } from 'react';
-import { Avatar, Loading,Navbar,  Popover,Button, Dropdown, Table, Card,Grid,  NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Avatar, Loading,Navbar, Container, Popover,Button, Dropdown, Table, Card,Grid,  NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {GamesFun} from '../components/table.js'
 import { css } from '@emotion/react';
 
@@ -98,17 +98,17 @@ export default function Home() {
           <title>ARBITRAGE v1.5</title>
           <link rel="icon" href="/basketball.png" />
         </Head>
-        <Grid.Container justify="center" maxWidth= {false}>
-        <Navbar isBordered variant="floating">
-        <Navbar.Brand hideIn="xs">
+        <Container justify="left" fluid>
+        <Navbar shouldHideOnScroll isBordered variant="floating" hideIn='xs'>
+        <Navbar.Brand hideIn="m">
         <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 12 }}>
-          ARBITRAGE v1.5<Image alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
+          ARBITRAGE v1.5<Image alt='lebron' src='/lebron.png' style={{ marginLeft: 10, marginTop:10 }} width='40' height='65' />
         </h1>
         </Navbar.Brand>
-        <Navbar.Content>
+        <Navbar.Content gap ='25px'>
             <Dropdown key="liveOrnot" style={{ marginLeft: '14px' }}>
             <Navbar.Item>
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '20px', marginRight: '14px' }}>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}>
               {liveValue}
             </Dropdown.Button>
             </Navbar.Item>
@@ -127,9 +127,9 @@ export default function Home() {
             </Dropdown.Menu>
           </Dropdown>
 
-          <Dropdown key="league" style={{ marginLeft: '14px' }}>
+          <Dropdown key="league">
             <Navbar.Item>
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px',marginRight: '14px'}}>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}>
               {leagueValue}
             </Dropdown.Button>
             </Navbar.Item>
@@ -155,7 +155,7 @@ export default function Home() {
           {liveselected === "DAILY" ? (
           <Dropdown key="format">
             <Navbar.Item>
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px',marginRight: '14px' }}>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}>
               {formatselected}
             </Dropdown.Button>
             </Navbar.Item>
@@ -174,25 +174,25 @@ export default function Home() {
               <Dropdown.Item key="total">Total</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>): <div></div>}
-          <Popover isBordered placement="left-top">
+          <Popover isBordered placement="bottom">
+          <Navbar.Item>
             <Popover.Trigger>
-            <Navbar.Item>
-              <Button auto bordered aria-label = "popover Button" color="success" style={{ marginLeft: '3px',marginRight: '14px' }}>?</Button>
-              </Navbar.Item>
+              <Button auto bordered aria-label = "popover Button" color="success">?</Button>
             </Popover.Trigger>
+            </Navbar.Item>
             <Popover.Content css = {{backgroundColor: '#F0F3F5', padding: '8px'}}><b>LIVE:</b> Updates odds for barstool sportsbook every 3 seconds.<br></br><b>DAILY: </b>Odds are updated once a day at 8:45 PST</Popover.Content>
           </Popover>
           </Navbar.Content>
           </Navbar>
       
-      <Grid >
+      
       <ErrorBoundary key={formatselected + leagueselected + liveselected}>
         {
           GamesFun(games, error, isLoading, formatselected, leagueselected, liveselected)
         }
       </ErrorBoundary>
-      </Grid>
-      </Grid.Container>
+      
+      </Container>
       
       </SSRProvider>
       
