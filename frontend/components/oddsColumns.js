@@ -1,60 +1,78 @@
-import { Radio, Avatar, Loading, Card,Grid, Table, Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Radio, Avatar, Loading,Image,  Card,Grid, Table, Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import moment from 'moment-timezone'
-import {Teams} from '../components/teams.js'
+import {NBAteams} from './NBAteams.js'
+import {NHLteams} from './NHLteams.js'
+import {MLBteams} from './MLBteams.js'
+import styles from '@/styles/Home.module.css'
 
-const matchColumnRender = (item) => (
-    <Table.Cell>
-      {item['away_team']}<br></br> @ {item['home_team']}
+//Renders team names
+const matchColumnRender = (item) => {
+   return( <Table.Cell >
+      <div className={styles.title}>{item['away_team']}<br></br> @ {item['home_team']}</div>
     </Table.Cell>
-);
+)};
 
-  //returns matchup time
-const timeColumnRender = (item) => (
-    <Table.Cell>
-        {moment.utc(item['commence_time']).tz('America/Los_Angeles').format('MMM D, h:mm A')}
-    </Table.Cell>
-);
+//Renders matchup time based on users timezone
+const timeColumnRender = (item) => {
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const localTime = moment.utc(item.commence_time).tz(userTimezone);
+    return (
+      <Table.Cell>
+        <div className={styles.title}>{localTime.format('MMM D, h:mm A')}</div>
+      </Table.Cell>
+    );
+  };
 
-//returns the avatars with logos for eaach team
-const imageColumnRender = (item) => {
-    const abbreviation = new Teams();
-    const hometeam = "/TeamIMG/" + abbreviation.getImgByName(item['home_team'])
-    const awayteam = "/TeamIMG/" + abbreviation.getImgByName(item['away_team'])
 
+//Renders team logos from NBAteams or NHLteams
+const imageColumnRender = (item, keystring, {selected}, {league}) => {
+    let abbreviation;
+        if (league === "NHL") {
+            abbreviation = new NHLteams();
+        } else if (league === "MLB"){
+            abbreviation = new MLBteams();
+        }
+        else {
+            abbreviation = new NBAteams();
+        }
+    const hometeam = "/"+league+"img/" + abbreviation.getImgByName(item['home_team'])
+    const awayteam = "/"+league+"img/" + abbreviation.getImgByName(item['away_team'])
+    if (league==="NHL")
+    {
+        console.log(hometeam)
+    }
     return(
     <Table.Cell>
-        <Tooltip content={item['away_team']} 
-        rounded color="primary">
-    <Avatar
-            size="xl"
+    <Image
             src={awayteam}
-            color="gradient"
-            bordered
-            zoomed
+            alt = {item['away_team']}
+            width = {70}
+            height = {70}
         />
-        </Tooltip>
-        <div style={{ height: "20px" }} />
-        <Tooltip content={item['home_team']}
-        rounded 
-        color="primary">
-    <Avatar
-            size="xl"
+        <div style={{ height: "15px" }} />
+    <Image
             src={hometeam}
-            color="gradient"
-            bordered
-            zoomed
-        />
-        </Tooltip>
+            alt = {item['home_team']}
+            width = {70}
+            height = {70}
+        /> 
     </Table.Cell>
     )
 };
 
 
-//Render for DraftKings. Gathers all the information from 'item' and returns it in a displayable format
-const bookColumnRender = (item, keystring, {selected}) => {
-    //Finds the specific book for each game, if the isn't found it returns N/A
-    const abbreviation = new Teams();
-
+//Render for all sportbook columns. Gathers all the information from 'item' and returns it in a displayable format
+const bookColumnRender = (item, keystring, {selected},league) => {
+    let abbreviation;
+    if (league === "NHL") {
+        abbreviation = new NHLteams();
+    } 
+    if (league === "MLB"){
+        abbreviation = new MLBteams();
+    }
+    else {
+        abbreviation = new NBAteams();
+    }
     const searchResult = item.bookmakers.find((bookmaker) => bookmaker.key === keystring);
    
     let retMes = null;
@@ -67,11 +85,11 @@ const bookColumnRender = (item, keystring, {selected}) => {
             </Table.Cell>
             )
     }
-    if (searchResult){
-        const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
-        const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
-        const totalsmarket = searchResult.markets.find((tmarket) => tmarket.key === 'totals');
-        
+   
+    const h2hmarket = searchResult.markets.find((hmarket) => hmarket.key === 'h2h');
+    const spreadmarket = searchResult.markets.find((smarket) => smarket.key === 'spreads');
+    const totalsmarket = searchResult.markets.find((tmarket) => tmarket.key === 'totals');
+            
     if (selected=="moneyline" && h2hmarket) {
         const sortOutcomes1 = sortOutcomesByTeamName(h2hmarket.outcomes,item);
         retMes = sortOutcomes1.map((outcome) => (
@@ -87,13 +105,12 @@ const bookColumnRender = (item, keystring, {selected}) => {
         retMes = retMes ? [...retMes, ...outcomes1] : outcomes1;
     }
 
-    if (selected=="totals" && totalsmarket) {
+    if (selected=="total" && totalsmarket) {
         const outcomes2 = totalsmarket.outcomes.map((outcome) => (
         totRender(outcome.point,plusAdder(outcome.price), outcome.name )
         ))
         retMes = retMes ? [...retMes, ...outcomes2] : outcomes2;
     }
-
     if (!retMes) {
         return (
         <Table.Cell>
@@ -102,23 +119,22 @@ const bookColumnRender = (item, keystring, {selected}) => {
         </Table.Cell>
         )
     }
-
     return (
         <Table.Cell>
         {retMes}
         </Table.Cell>
     );
-    }
 
 };
 
-
+//Finds the best odds for each game, uses the list of current sportsbooks and selected to find the best odds for given selection
 const bestOddsRender = (item, keystring, {selected}) => {
-    let MLmax = 0;
+    let MLmax = -100000000;
     let MLmaxName = null;
     let foundPositivePrice = false;
     let MLmin = -100000000;
     let MLminName = null;
+    let MLTeam = null;
 
     let SPmax = 0;
     let SPmaxName = null;
@@ -127,6 +143,7 @@ const bestOddsRender = (item, keystring, {selected}) => {
     let SPminName = null;
     let SPmaxPrice = -10000000;
     let SPminPrice = -1000000;
+    let spreadTeam = null;
 
     let TOmax = 100000000;
     let TOmaxName = null;
@@ -138,17 +155,19 @@ const bestOddsRender = (item, keystring, {selected}) => {
 
   
     item.bookmakers.forEach((bookmaker) => { 
+        
      Columns(selected).forEach((column) => {
         if (column.key === bookmaker.key) {
             const h2hmarket = bookmaker.markets.find((hmarket) => hmarket.key === 'h2h');
+            
+
             if (h2hmarket){
             h2hmarket.outcomes.forEach((outcome) => {
-                if (outcome.price > 0 && (outcome.price > MLmax || !foundPositivePrice)) {
+                if (outcome.name === item['away_team'] && (outcome.price > MLmax)) {
                 MLmax = outcome.price;
                 MLmaxName = column.abb;
-                foundPositivePrice = true;
                 }
-                if (outcome.price < 0 && (outcome.price > MLmin )){
+                if (outcome.name === item['home_team'] && (outcome.price > MLmin )){
                 MLmin = outcome.price;
                 MLminName = column.abb;
                 }
@@ -157,13 +176,14 @@ const bestOddsRender = (item, keystring, {selected}) => {
             const spreadmarket = bookmaker.markets.find((smarket) => smarket.key === 'spreads');
             if (spreadmarket){
             spreadmarket.outcomes.forEach((outcome) => {
-                if (outcome.point > 0 && (outcome.point > SPmax || !foundPositiveSpread || (outcome.point === SPmax && outcome.price > SPmaxPrice))) {
+                if (outcome.name === item['away_team'] && (outcome.point > SPmax || !foundPositiveSpread || (outcome.point === SPmax && outcome.price > SPmaxPrice))) {
                 SPmaxPrice = outcome.price;
                 SPmax = outcome.point;
                 SPmaxName = column.abb;
                 foundPositiveSpread = true;
+                MLTeam = outcome.name;
                 }
-                if (outcome.point < 0 && (outcome.point > SPmin || (outcome.point === SPmin && outcome.price > SPminPrice) )){
+                if (outcome.name === item['home_team']&& (outcome.point > SPmin || (outcome.point === SPmin && outcome.price > SPminPrice) )){
                 SPminPrice = outcome.price;  
                 SPmin = outcome.point;
                 SPminName = column.abb;
@@ -177,6 +197,7 @@ const bestOddsRender = (item, keystring, {selected}) => {
                 TOmax = outcome.point;
                 TOmaxName = column.abb;
                 TOmaxPrice = outcome.price;
+                spreadTeam = outcome.name;
                 }
                 if ((outcome.name ==='Under') && ((outcome.point > TOmin) || (outcome.price > TOminPrice && outcome.point === TOmin))){
                 TOmin = outcome.point;
@@ -188,15 +209,27 @@ const bestOddsRender = (item, keystring, {selected}) => {
         }
     }}
 )});
+let homeMLren = null;
+let awayMLren = null;
+awayMLren = spreadRender(plusAdder(MLmax),MLmaxName);
+homeMLren = spreadRender(plusAdder(MLmin),MLminName);
+
+
+let homeSPren = null;
+let awaySPren = null;
+homeSPren = bestTotRender(plusAdder(SPmin),plusAdder(SPminPrice),SPminName,"")
+awaySPren = bestTotRender(plusAdder(SPmax),plusAdder(SPmaxPrice),SPmaxName,"");
+
+
     if (selected == "moneyline"){
         return(
             <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
-                 {spreadRender(plusAdder(MLmax),MLmaxName)}
-                 {spreadRender(plusAdder(MLmin),MLminName)}
+                {awayMLren}
+                {homeMLren}
             </Table.Cell>
         )
     }
-    if (selected == "totals"){
+    if (selected == "total"){
         return(
             <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
                 {bestTotRender(TOmax,TOmaxPrice,TOmaxName,"Over")}
@@ -207,25 +240,20 @@ const bestOddsRender = (item, keystring, {selected}) => {
     if (selected == "spread"){
         return(
             <Table.Cell css={{ backgroundColor: '#f2f2f2',margin: 'auto',textAlign: 'center'}} >
-                {bestTotRender(plusAdder(SPmax),SPmaxPrice,SPmaxName,"")}
-                {bestTotRender(plusAdder(SPmin),SPminPrice,SPminName,"")}
+                {awaySPren}
+                {homeSPren}
             </Table.Cell>
         )
     }
   
     return (
       <Table.Cell>
-        <b>ML:</b>{MLmaxName}  {plusAdder(MLmax)}<br></br>
-                {MLminName}  {MLmin}<br></br>
-        <b>Spread:</b> {SPmaxName}  {plusAdder(SPmax)}<br></br>
-                      {SPminName}  {SPmin}<br></br>
-         <b>Over:</b>{TOmaxName}  {(TOmax)}  {TOmaxPrice}<br></br>
-         <b>Under:</b>{TOminName}  {TOmin}   {TOminPrice}
+        Best Odds N/A
       </Table.Cell>
     );
-  };
+};
   
-   //constants for the column. Includes key, label and which renderer to use
+//constants for the column. Includes key, label and which renderer to use
 export const Columns = (selected)=> {
     return([
     {
@@ -313,6 +341,7 @@ export const Columns = (selected)=> {
 
 ]);}
 
+//checks if num is positive and adds a + sign if it is
 function plusAdder(num){
     if (num > 0){
         return "+" + num
@@ -320,15 +349,15 @@ function plusAdder(num){
     else return (num)
 }
 
+//makes sure odds will show up in correct order
 function sortOutcomesByTeamName(outcomes, items) {
-    console.log(items['home_team']);
     return outcomes.slice().sort((a, b) => {
       if (a.name === items['home_team']) return 1;
       if (b.name === items['home_team']) return -1;
       return 0;
     });
-  }
-
+}
+//returns a card for spread
 function spreadRender(spreadNum, spreadPrice) {
     return (
       <Card variant="bordered"
@@ -337,13 +366,12 @@ function spreadRender(spreadNum, spreadPrice) {
         <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
           <Text
             size={25}
-            css={{ textAlign: 'center', lineHeight: '1.5' }}>
+            css={{ textAlign: 'center', lineHeight: '1.3' }}>
                 <b>{spreadNum}</b>
           </Text>
           <Text
-            size={15}
-            textAlign="center"
-            css={{ textAlign: 'center', lineHeight: '1.2' }}>
+            size={14}
+            css={{ textAlign: 'center', lineHeight: '1.5' }}>
                 {spreadPrice}
           </Text>
         </Card.Body>
@@ -351,13 +379,13 @@ function spreadRender(spreadNum, spreadPrice) {
     );
 }
 
+//returns a card for ML
 function h2hRender(h2hPrice) {
-
     return (
             <Card variant="bordered"
             css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
             isHoverable>
-                <Card.Body css = {{height: '73px', justifyContent: "center", overflow: "hidden"}}>
+                <Card.Body css = {{height: '73px', justifyContent: "center", overflow: "hidden",}}>
                     <Text 
                         size={25}
                         css = {{textAlign:'center'}}>
@@ -368,25 +396,24 @@ function h2hRender(h2hPrice) {
       );
 
 }
+//returns a card for total
 function totRender(totNum, totPrice, totName) {
     let ou = "o"
     if (totName === "Under"){
         ou = "u"
     }
-
     return (
         <Card variant="bordered"
         css={{ width: "85px", height: "73px", margin: '10px', marginLeft: '17px', marginRight: '0' }}
         isHoverable>
             <Card.Body css={{ height: '73px', justifyContent: "center", overflow: "hidden", display: 'flex', flexDirection: 'column' }}>
                 <Text
-                size={21}
-                css={{ textAlign: 'center', lineHeight: '1.5' }}>
+                size={22}
+                css={{ textAlign: 'center', lineHeight: '1.7'}}>
                     <b>{ou}{totNum}</b>
                 </Text>
                 <Text
-                size={11}
-                textAlign="center"
+                size={14}
                 css={{ textAlign: 'center', lineHeight: '1.2' }}>
                     {totPrice}
                 </Text>
@@ -394,7 +421,7 @@ function totRender(totNum, totPrice, totName) {
         </Card>
     );
 }
-
+//returns a card for best total
 function bestTotRender(totNum, totPrice, totName, totName2) {
     let ou = ""
     if (totName2 === "Under"){
@@ -416,13 +443,11 @@ function bestTotRender(totNum, totPrice, totName, totName2) {
                 </Text>
                 <Text
                 size={17}
-                textAlign="center"
                 css={{ textAlign: 'center', lineHeight: '1.2' }}>
                     {totPrice}
                 </Text>
                 <Text
-                size={11}
-                textAlign="center"
+                size={13}
                 css={{ textAlign: 'center', lineHeight: '1.3' }}>
                     {totName}
                 </Text>
@@ -430,3 +455,4 @@ function bestTotRender(totNum, totPrice, totName, totName2) {
         </Card>
     );
 }
+

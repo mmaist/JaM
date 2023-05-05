@@ -1,68 +1,90 @@
-import { Radio, Avatar, Loading, Table,Card,Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
-import {Columns} from '../components/columns.js'
+import { Radio, Avatar,Dropdown, Loading, Table,Card,Text, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import {Columns} from '../components/oddsColumns.js'
+import {MLBcolumns} from '../components/mlbColumns.js'
+import {liveColumns} from '../components/liveColumns.js'
+import {MLBteams} from './MLBteams.js'
 import React from "react";
+import { SSRProvider } from "@react-aria/ssr";
+import { v4 as uuidv4 } from "uuid";
 
-export function gamesFun(games, error, isLoading) {
-    const [selected, setSelected] = React.useState("moneyline");
-    console.log('hi')  
+
+export function GamesFun(games, error, isLoading, selected, league, liveJSON, timeInterval) {
     if (error) return <div>Failed to load</div>
-    if (isLoading) return <Loading size = 'xl' />
+    if (isLoading || !games) return <Loading size = 'xl' />
 
+    let gamesArray = null;
+    let newLiveArray = null;
+    let gamesArray2 = null;
+    let gamesArray1 = null;
+    
     const tableColumns = Columns(selected)
+    const MLBtColumns = MLBcolumns(selected)
+    const liveorNotColumns = liveColumns(selected)
+   if (games){
+    gamesArray1 = Object.values(games)
+    gamesArray2 = sortByCommenceTime(gamesArray1)
+    gamesArray = getGamesWithinSameDay(gamesArray2) 
+    if (liveJSON === 'LIVE') {
+      const liveOrNotArray = Object.values(games);
+      const [firstObject] = liveOrNotArray;
+       newLiveArray = [firstObject];
+    }
+   }
+    // Use map() to add a unique id to eah object in newLiveArray
+    
+    let mlbArray = null;
+    if (league ==='MLBws' && liveJSON === 'DAILY') {
+    const mlbArray2 =  addBestOdds("", gamesArray1,"")
+    mlbArray = sortByBestOdds(mlbArray2)
+    }
+    
+    let pColumns = tableColumns
 
-    const gamesArray1 = Object.values(games)
-    const gamesArray2 = sortByCommenceTime(gamesArray1)
-    const gamesArray = getGamesWithinSameDay(gamesArray2)
+    if (liveJSON === 'LIVE') {
+        pColumns = liveorNotColumns
+    }else
+    if (league ==='MLBws' && liveJSON === 'DAILY') {
+        pColumns = MLBtColumns
+    }
 
     //returns a completed table of all information regarding games and odds
     return (
-    <div>
-        <Radio.Group
-        color="primary"
-        orientation="horizontal"
-        value={selected}
-        onChange={setSelected}
-        key = "checkbox"
-        >
-            <Radio value="moneyline">ML</Radio>
-            <Radio value="spread">Spread</Radio>
-            <Radio value="totals">O/U</Radio>
-        </Radio.Group> 
-           
-        
-        <Table
-        lined
-        key={selected}
-        
-        bordered
-        shadow={false}
-        aria-label="Example table with dynamic content"
-        css={{
-            height: "auto",
-            minWidth: "100%",
-        }}
-        
-        >
-        
-        <Table.Header columns={tableColumns}>
-            {(column) => (
-            <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
-            )}
-        </Table.Header>
-        <Table.Body items={gamesArray}>
-        {(item) => (
-        <Table.Row key={item.key}>
-        {tableColumns.map((column) =>
-            column.render ? column.render(item, column.key, {selected}) : (
-            <Table.Cell key={column.key} align = "center" >{item[column.key]}</Table.Cell>
-            )
-        )}
-        </Table.Row>
-    )}
-        </Table.Body>
-        </Table>
-    
-    </div>
+    <SSRProvider>
+      <div> 
+          <div style={{ margin: '10px 0' }}></div>  
+          <Table
+  lined
+  shadow={false}
+  sticked
+  aria-label="MAIN TABLE"
+  css={{
+    height: "auto",
+    minWidth: "500px", // set a minimum width for the table
+    overflowX: "auto",
+    maxWidth: "100%"
+  }}
+>
+          <Table.Header css={{position: 'sticky'}} columns={league === 'MLBws' ? (liveJSON === 'LIVE' ? liveorNotColumns : MLBtColumns) : (liveJSON === 'LIVE' ? liveorNotColumns : tableColumns)} >
+              {(column) => (
+              <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
+              )}
+          </Table.Header>
+          <Table.Body css= {{position: 'sticky'}} items={league === 'MLBws' ? (liveJSON === 'LIVE' ? newLiveArray[0] : mlbArray) : (liveJSON === 'LIVE' ? newLiveArray[0] : gamesArray)} >
+          {(item,index) => (
+          <Table.Row key={uuidv4()}>
+          {pColumns.map((column, index) => (
+            column.key === "images" && league === "NCAAB"
+              ? null // exclude the images column if league is NCAAB
+              : (column.render ? column.render(item, column.key, {selected}, {league}, {gamesArray1}, timeInterval)
+                : <Table.Cell key={index+column.key} align="left">{column.key}</Table.Cell>)
+          ))}
+          </Table.Row>
+      )}
+          </Table.Body>
+          </Table>
+      
+      </div>
+    </SSRProvider>
     );
 }
 
@@ -75,7 +97,6 @@ function getGamesWithinSameDay(gamesArray) {
         const gameTime = new Date(game.commence_time);
         return gameTime >= startOfDay && gameTime < endOfDay;
     });
-
 }
 //sorts the games by commence time
 function sortByCommenceTime(events) {
@@ -89,3 +110,56 @@ function sortByCommenceTime(events) {
       return 0;
     });
   }
+
+ 
+function sortByBestOdds(events) {
+    return events.sort((a, b) => {
+      if (a.price < b.price) {
+        return -1;
+      }
+      if (a.price > b.price) {
+        return 1;
+      }
+      return 0;
+    });
+  }
+
+function addBestOdds(mlbArray, futArray, events){
+    let mlbTeamnamessamp = new MLBteams()
+    let mlbTeamMapsamp = mlbTeamnamessamp.getTeamNames()
+    let resultsArray = [];
+    
+    mlbTeamMapsamp.forEach((item) => {
+        let MLmax = 0;
+        let MLmaxName = null;
+        futArray[0].bookmakers.forEach((bookmaker) => {
+        MLBcolumns().forEach((column) => {
+            if (column.key === bookmaker.key) {
+                const futuremarket = bookmaker.markets.find((market) => market.key === 'outrights');
+
+                if (futuremarket){
+                    futuremarket.outcomes.forEach((outcome) => {
+                        if (outcome.name === item.name && (outcome.price > MLmax)) {
+                        MLmax = outcome.price;
+                        MLmaxName = outcome.name;
+                        }
+                    });
+                    }
+            }
+        })
+    })
+    
+    const result = {
+        price: MLmax,
+        name: MLmaxName,
+        key: MLmaxName
+      };
+      
+      
+      resultsArray.push(result);
+    
+});
+
+return (resultsArray)
+
+}
