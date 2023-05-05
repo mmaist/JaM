@@ -59,10 +59,9 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON, ti
   aria-label="MAIN TABLE"
   css={{
     height: "auto",
-    minWidth: "800px", // set a minimum width for the table
+    minWidth: "500px", // set a minimum width for the table
     overflowX: "auto",
-    position: 'sticky',
-    textAlign: 'left', // align table to the left
+    maxWidth: "100%"
   }}
 >
           <Table.Header css={{position: 'sticky'}} columns={league === 'MLBws' ? (liveJSON === 'LIVE' ? liveorNotColumns : MLBtColumns) : (liveJSON === 'LIVE' ? liveorNotColumns : tableColumns)} >

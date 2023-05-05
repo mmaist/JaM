@@ -10,6 +10,7 @@ import { Avatar, Loading,Navbar, Container, Popover,Button, Dropdown, Table, Car
 import {GamesFun} from '../components/table.js'
 import { css } from '@emotion/react';
 
+
 //Barstool sports live links
 const endpoints = {
   NBA:
@@ -95,18 +96,18 @@ export default function Home() {
   return (
       <SSRProvider>
         <Head>
-          <title>ARBITRAGE v1.5</title>
+          <title>ARBITRAGE v1.6</title>
           <link rel="icon" href="/basketball.png" />
+          <meta name="viewport" content="width=device-width, initial-scale=.5" />
         </Head>
-        <Container justify="left" fluid>
-        <Navbar shouldHideOnScroll isBordered variant="floating" hideIn='xs'>
-        <Navbar.Brand hideIn="m">
-        <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 12 }}>
-          ARBITRAGE v1.5<Image alt='lebron' src='/lebron.png' style={{ marginLeft: 10, marginTop:10 }} width='40' height='65' />
-        </h1>
+        
+        <Navbar shouldHideOnScroll isBordered variant="floating">
+       <Navbar.Brand gap ="25px">
+        <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 0 }}>
+          ARBITRAGE v1.6 </h1>
         </Navbar.Brand>
         <Navbar.Content gap ='25px'>
-            <Dropdown key="liveOrnot" style={{ marginLeft: '14px' }}>
+            <Dropdown key="liveOrnot" >
             <Navbar.Item>
             <Dropdown.Button color="success" css={{ tt: "capitalize"}}>
               {liveValue}
@@ -175,7 +176,7 @@ export default function Home() {
             </Dropdown.Menu>
           </Dropdown>): <div></div>}
           <Popover isBordered placement="bottom">
-          <Navbar.Item>
+          <Navbar.Item hideIn ="sm">
             <Popover.Trigger>
               <Button auto bordered aria-label = "popover Button" color="success">?</Button>
             </Popover.Trigger>
@@ -192,7 +193,7 @@ export default function Home() {
         }
       </ErrorBoundary>
       
-      </Container>
+      
       
       </SSRProvider>
       

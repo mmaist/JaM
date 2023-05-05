@@ -33,3 +33,9 @@
   font-family: 'boucher', futura;
   font-size: 1rem;
 }
+
+@media (max-width: 576px) {
+  .image {
+    display: none;
+  }
+}
