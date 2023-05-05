@@ -11,7 +11,7 @@ const matchMLBRender = (item) => (
 
 const futureRender = (item, keystring, {selected},league, futArray) => {
     const searchResult = futArray.gamesArray1[0].bookmakers.find((bookmaker) => bookmaker.key === keystring);
-    if(!searchResult) return(<Table.Cell>N/A</Table.Cell>)
+    if(!searchResult) return(<Table.Cell>{h2hRender('N/A')}</Table.Cell>)
 
     const futuremarket = searchResult.markets.find((market) => market.key === 'outrights');
 
@@ -23,10 +23,6 @@ const futureRender = (item, keystring, {selected},league, futArray) => {
             {h2hRender(plusMinusAdder(searchResult1.price))}
         </Table.Cell>
     )
-
-    
-
-   return (<Table.Cell>hi</Table.Cell>)
 
 };
 

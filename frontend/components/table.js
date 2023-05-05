@@ -53,28 +53,30 @@ export function GamesFun(games, error, isLoading, selected, league, liveJSON, ti
       <div> 
           <div style={{ margin: '10px 0' }}></div>  
           <Table
-          lined
-          shadow={false}
-          sticked
-          aria-label="MAIN TABLE"
-          css={{
-              height: "auto",
-              width: "auto",
-          }}
-          >
+  lined
+  shadow={false}
+  sticked
+  aria-label="MAIN TABLE"
+  css={{
+    height: "auto",
+    minWidth: "500px", // set a minimum width for the table
+    overflowX: "auto",
+    maxWidth: "100%"
+  }}
+>
           <Table.Header css={{position: 'sticky'}} columns={league === 'MLBws' ? (liveJSON === 'LIVE' ? liveorNotColumns : MLBtColumns) : (liveJSON === 'LIVE' ? liveorNotColumns : tableColumns)} >
               {(column) => (
               <Table.Column key={column.key} align = 'center'>{column.label}</Table.Column>
               )}
           </Table.Header>
-          <Table.Body items={league === 'MLBws' ? (liveJSON === 'LIVE' ? newLiveArray[0] : mlbArray) : (liveJSON === 'LIVE' ? newLiveArray[0] : gamesArray)} >
+          <Table.Body css= {{position: 'sticky'}} items={league === 'MLBws' ? (liveJSON === 'LIVE' ? newLiveArray[0] : mlbArray) : (liveJSON === 'LIVE' ? newLiveArray[0] : gamesArray)} >
           {(item,index) => (
           <Table.Row key={uuidv4()}>
           {pColumns.map((column, index) => (
             column.key === "images" && league === "NCAAB"
               ? null // exclude the images column if league is NCAAB
               : (column.render ? column.render(item, column.key, {selected}, {league}, {gamesArray1}, timeInterval)
-                : <Table.Cell key={index+column.key} align="center">{column.key}</Table.Cell>)
+                : <Table.Cell key={index+column.key} align="left">{column.key}</Table.Cell>)
           ))}
           </Table.Row>
       )}

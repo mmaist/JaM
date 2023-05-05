@@ -6,9 +6,10 @@ import useSWR from 'swr'
 import moment from 'moment-timezone'
 import {SSRProvider} from '@react-aria/ssr'
 import React, { useEffect, useState, useCallback } from 'react';
-import { Avatar, Loading, Popover,Button, Dropdown, Table, Card, NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
+import { Avatar, Loading,Navbar, Container, Popover,Button, Dropdown, Table, Card,Grid,  NextUIProvider, Tooltip, Spinner} from "@nextui-org/react";
 import {GamesFun} from '../components/table.js'
 import { css } from '@emotion/react';
+
 
 //Barstool sports live links
 const endpoints = {
@@ -94,20 +95,24 @@ export default function Home() {
   //Returns frontend elements
   return (
       <SSRProvider>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Head>
-          <title>ARBITRAGE v1.5</title>
+          <title>ARBITRAGE v1.6</title>
           <link rel="icon" href="/basketball.png" />
+          <meta name="viewport" content="width=device-width, initial-scale=.5" />
         </Head>
-        <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 12 }}>
-          ARBITRAGE v1.5<Image alt='lebron' src='/lebron.png' style={{ marginLeft: 10 }} width='40' height='70' />
-        </h1>
         
-        <div style={{ display: 'flex', flexDirection: 'row', marginLeft: '14px' }}>
-          <Dropdown key="liveOrnot" style={{ marginLeft: '14px' }}>
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '20px', marginRight: '14px', marginTop: '18px' }}>
+        <Navbar shouldHideOnScroll isBordered variant="floating">
+       <Navbar.Brand gap ="25px">
+        <h1 style={{ display: 'flex', alignItems: 'center', marginLeft: 0 }}>
+          ARBITRAGE v1.6 </h1>
+        </Navbar.Brand>
+        <Navbar.Content gap ='25px'>
+            <Dropdown key="liveOrnot" >
+            <Navbar.Item>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}>
               {liveValue}
             </Dropdown.Button>
+            </Navbar.Item>
             <Dropdown.Menu
               aria-label="LIVE-DAILY"
               color="success"
@@ -123,10 +128,12 @@ export default function Home() {
             </Dropdown.Menu>
           </Dropdown>
 
-          <Dropdown key="league" style={{ marginLeft: '14px' }}>
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px',marginRight: '14px', marginTop: '18px' }}>
+          <Dropdown key="league">
+            <Navbar.Item>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}>
               {leagueValue}
             </Dropdown.Button>
+            </Navbar.Item>
             <Dropdown.Menu
               aria-label="LEAGUE-DROPDOWN"
               color="success"
@@ -148,9 +155,11 @@ export default function Home() {
 
           {liveselected === "DAILY" ? (
           <Dropdown key="format">
-            <Dropdown.Button color="success" css={{ tt: "capitalize"}}style={{ marginLeft: '3px',marginRight: '14px', marginTop: '18px' }}>
+            <Navbar.Item>
+            <Dropdown.Button color="success" css={{ tt: "capitalize"}}>
               {formatselected}
             </Dropdown.Button>
+            </Navbar.Item>
             <Dropdown.Menu
               aria-label="FORMAT-DROPDOWN"
               color="success"
@@ -166,22 +175,28 @@ export default function Home() {
               <Dropdown.Item key="total">Total</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>): <div></div>}
-          <Popover isBordered placement="left-top">
+          <Popover isBordered placement="bottom">
+          <Navbar.Item hideIn ="sm">
             <Popover.Trigger>
-              <Button auto bordered aria-label = "popover Button" color="success" css={{ display: 'flex', position: 'absolute', top: '18px', right: '1%' }}>?</Button>
+              <Button auto bordered aria-label = "popover Button" color="success">?</Button>
             </Popover.Trigger>
+            </Navbar.Item>
             <Popover.Content css = {{backgroundColor: '#F0F3F5', padding: '8px'}}><b>LIVE:</b> Updates odds for barstool sportsbook every 3 seconds.<br></br><b>DAILY: </b>Odds are updated once a day at 8:45 PST</Popover.Content>
           </Popover>
-          
-        </div>
-      </div>
-      <div style={{ margin: '0px 0' }}></div>
+          </Navbar.Content>
+          </Navbar>
+      
+      
       <ErrorBoundary key={formatselected + leagueselected + liveselected}>
         {
           GamesFun(games, error, isLoading, formatselected, leagueselected, liveselected)
         }
       </ErrorBoundary>
+      
+      
+      
       </SSRProvider>
+      
     
   );
   
